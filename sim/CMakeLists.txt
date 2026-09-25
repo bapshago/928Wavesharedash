@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.16)
 project(dash_sim C)
 
 set(CMAKE_C_STANDARD 11)
-set(LVGL_VERSION "v9.6.0" CACHE STRING "LVGL tag to fetch")
+set(LVGL_VERSION "v9.5.0" CACHE STRING "LVGL tag to fetch")
 set(LVGL_DIR "" CACHE PATH "Local LVGL checkout (skips the download)")
 
 if(NOT LVGL_DIR)

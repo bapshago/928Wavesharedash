@@ -9,6 +9,6 @@ idf_component_register(
     INCLUDE_DIRS "." "core" "ui"
     REQUIRES esp_driver_twai esp_timer nvs_flash)
 
-# LVGL 9.6 deprecates lv_obj_add_flag()/lv_obj_remove_flag() in favour of
+# Newer LVGL (9.6+) deprecates lv_obj_add_flag()/lv_obj_remove_flag() in favour of
 # per-flag setters that older 9.x releases don't have; keep the portable calls.
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-deprecated-declarations)

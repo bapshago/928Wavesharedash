@@ -27,6 +27,7 @@ aligned with it unless a change is deliberate and noted in README "Differences".
 - Kconfig `bool` options are undefined (not 0) when off — use `#if CONFIG_X`, not the macro as a value.
 - BSP pinned to `waveshare/esp32_p4_wifi6_touch_lcd_xc` 3.0.1 (same as Waveshare's examples);
   its display config uses `esp_lvgl_adapter` (`ESP_LV_ADAPTER_DEFAULT_CONFIG()`).
-- Stick to LVGL APIs present across 9.x (e.g. `lv_obj_add_flag`, deprecated in 9.6 but portable).
+- LVGL is pinned to ~9.5 (main/idf_component.yml, sim/CMakeLists.txt, sim/lv_conf.h): 9.6 moved its
+  headers and esp_lvgl_adapter's old includes then fail under ESP-IDF 6.x -Werror. Keep all three in step.
 - Screenshots in `docs/screenshots/` come from the simulator; recompress before committing
   (the simulator's PNG writer stores data uncompressed).
