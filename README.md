@@ -84,7 +84,7 @@ one end of the bus.
 ## Building and flashing
 
 Requires [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32p4/get-started/)
-**v5.5 or newer** (verified on 5.5; Waveshare also tests their board on 6.0). The Waveshare BSP and LVGL are fetched automatically by the
+**v5.5 or newer** (builds verified on 5.5 and 6.1). The Waveshare BSP and LVGL are fetched automatically by the
 component manager on the first build.
 
 ```sh

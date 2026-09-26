@@ -85,21 +85,21 @@ void dash_model_set_settings(const dash_settings_t *cfg)
 
 // ── NVS ────────────────────────────────────────────────────────────────────
 
-static bool nvs_get_bool(const char *key, bool dflt)
+static bool prefs_get_bool(const char *key, bool dflt)
 {
     uint8_t v;
     return nvs_get_u8(s_nvs, key, &v) == ESP_OK ? v != 0 : dflt;
 }
 
 // Doubles are stored as their raw 64-bit pattern.
-static void nvs_put_double(const char *key, double v)
+static void prefs_put_double(const char *key, double v)
 {
     uint64_t raw;
     memcpy(&raw, &v, sizeof(raw));
     nvs_set_u64(s_nvs, key, raw);
 }
 
-static bool nvs_get_double(const char *key, double *out)
+static bool prefs_get_double(const char *key, double *out)
 {
     uint64_t raw;
     if (nvs_get_u64(s_nvs, key, &raw) != ESP_OK) {
@@ -119,19 +119,19 @@ static esp_err_t load_persisted(void)
     ESP_RETURN_ON_ERROR(err, TAG, "nvs init");
     ESP_RETURN_ON_ERROR(nvs_open(NVS_NAMESPACE, NVS_READWRITE, &s_nvs), TAG, "nvs open");
 
-    s_settings.use_mph = nvs_get_bool("use_mph", false);
-    s_settings.use_fahrenheit = nvs_get_bool("use_f", false);
-    s_settings.use_odo_miles = nvs_get_bool("odo_mi", false);
-    if (!nvs_get_double("odo_m", &s_odo_m)) {
+    s_settings.use_mph = prefs_get_bool("use_mph", false);
+    s_settings.use_fahrenheit = prefs_get_bool("use_f", false);
+    s_settings.use_odo_miles = prefs_get_bool("odo_mi", false);
+    if (!prefs_get_double("odo_m", &s_odo_m)) {
         s_odo_m = 0.0;
     }
 
     // One-time odometer seed: set the starting reading once on a device that has
     // never been seeded, then never overwrite it so real accumulated mileage is
     // preserved. Erasing flash re-seeds it.
-    if (!nvs_get_bool("odo_seeded", false)) {
+    if (!prefs_get_bool("odo_seeded", false)) {
         s_odo_m = DASH_ODO_INITIAL_MILES * DASH_METERS_PER_MILE;
-        nvs_put_double("odo_m", s_odo_m);
+        prefs_put_double("odo_m", s_odo_m);
         nvs_set_u8(s_nvs, "odo_seeded", 1);
         nvs_commit(s_nvs);
         ESP_LOGI(TAG, "odometer seeded to %.0f miles", DASH_ODO_INITIAL_MILES);
@@ -258,7 +258,7 @@ static void housekeeping_task(void *arg)
         if (t - last_save >= ODO_SAVE_INTERVAL_MS) {
             last_save = t;
             if (fabs(odo - last_saved_m) >= 1.0) {
-                nvs_put_double("odo_m", odo);
+                prefs_put_double("odo_m", odo);
                 nvs_commit(s_nvs);
                 last_saved_m = odo;
             }
