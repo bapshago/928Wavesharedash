@@ -103,9 +103,12 @@ Options under `idf.py menuconfig` → **928 EV Dash**:
 | Test mode | off | Animated fake data, no CAN needed (the web dash's `TEST_MODE`) |
 | Backlight brightness | 100 % | |
 
-The defaults target ESP32-P4 silicon rev 3.x, like Waveshare's examples. For
-an older pre-v3 chip, build with
-`idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.rev1_3" build`.
+The defaults target **ESP32-P4 silicon rev v1.x** (the chip on our board is
+v1.3; the boot log and esptool print the revision). Newer boards ship with
+v3.x silicon, and the two builds are not interchangeable: flashing reports
+"requires chip revision in range ...". For a v3.x chip, build with
+`idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.rev3_x" build`
+after deleting `sdkconfig` and `build/`.
 
 Drivetrain constants (gear ratio 7.94, tyre circumference 1.975 m, 22 kWh pack,
 3.9 mi/kWh, initial odometer) are at the top of `main/core/dash_calc.h`.
