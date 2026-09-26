@@ -33,8 +33,11 @@ menu "928 EV Dash"
         bool "Test mode: animated fake data instead of CAN"
         default n
         help
-            Same as TEST_MODE = true in the web dash: generates moving test data
-            so the screen can be checked without a CAN bus connected.
+            Like TEST_MODE = true in the web dash, but every gauge sweeps its
+            full range linearly (up over 10 s, back down over 10 s; SOC runs
+            100 % → 0 %) and on/off states step through their values, so the
+            screen can be checked without a CAN bus connected. The odometer
+            does not count test-mode distance.
 
     config DASH_BRIGHTNESS
         int "Backlight brightness (%)"

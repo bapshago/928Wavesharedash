@@ -89,7 +89,7 @@ bool sim_model_init(const char *scenario, uint32_t now_ms)
     if (strcmp(scenario, "test") == 0) {
         g_animated = true;
         g_snap.can_state = DASH_CAN_TEST_MODE;
-        dash_test_data(&g_snap.vehicle, now_ms);
+        dash_test_data(&g_snap.vehicle, now_ms, &g_snap.settings);
         return true;
     }
 
@@ -141,7 +141,7 @@ void sim_model_tick(uint32_t now_ms)
 {
     g_snap.now_ms = now_ms;
     if (g_animated) {
-        dash_test_data(&g_snap.vehicle, now_ms);
+        dash_test_data(&g_snap.vehicle, now_ms, &g_snap.settings);
     }
 }
 

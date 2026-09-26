@@ -48,6 +48,57 @@ static void set_text(lv_obj_t *lbl, const char *txt)
     }
 }
 
+// Style setters that do nothing when the value is unchanged. Re-applying a style
+// makes LVGL recompute layout and redraw, and doing that 20x a second for every
+// label interrupted the page-swipe animation, so only touch what changed.
+static void set_text_color(lv_obj_t *o, uint32_t hex, lv_style_selector_t part)
+{
+    lv_color_t c = lv_color_hex(hex);
+    if (!lv_color_eq(lv_obj_get_style_text_color(o, part), c)) {
+        lv_obj_set_style_text_color(o, c, part);
+    }
+}
+
+static void set_bg_color(lv_obj_t *o, uint32_t hex, lv_style_selector_t part)
+{
+    lv_color_t c = lv_color_hex(hex);
+    if (!lv_color_eq(lv_obj_get_style_bg_color(o, part), c)) {
+        lv_obj_set_style_bg_color(o, c, part);
+    }
+}
+
+static void set_font(lv_obj_t *o, const lv_font_t *font)
+{
+    if (lv_obj_get_style_text_font(o, 0) != font) {
+        lv_obj_set_style_text_font(o, font, 0);
+    }
+}
+
+static void set_opa(lv_obj_t *o, lv_opa_t opa)
+{
+    if (lv_obj_get_style_opa(o, 0) != opa) {
+        lv_obj_set_style_opa(o, opa, 0);
+    }
+}
+
+static void set_shadow_width(lv_obj_t *o, int32_t w)
+{
+    if (lv_obj_get_style_shadow_width(o, LV_PART_MAIN) != w) {
+        lv_obj_set_style_shadow_width(o, w, LV_PART_MAIN);
+    }
+}
+
+static void set_hidden(lv_obj_t *o, bool hidden)
+{
+    if (lv_obj_has_flag(o, LV_OBJ_FLAG_HIDDEN) != hidden) {
+        if (hidden) {
+            lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_remove_flag(o, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+}
+
 static lv_obj_t *label(lv_obj_t *parent, const lv_font_t *font, uint32_t color, const char *txt)
 {
     lv_obj_t *l = lv_label_create(parent);
@@ -286,8 +337,8 @@ static void refresh_driver(const dash_snapshot_t *snap)
     int active = s->drive_dir < 0 ? 0 : (s->drive_dir > 0 ? 2 : 1);
     for (int i = 0; i < 3; i++) {
         bool on = (i == active);
-        lv_obj_set_style_text_color(ui.dir_lbl[i], lv_color_hex(on ? UI_COLOR_ACCENT : UI_COLOR_INACTIVE), 0);
-        lv_obj_set_style_text_font(ui.dir_lbl[i], on ? &lv_font_montserrat_48 : &lv_font_montserrat_28, 0);
+        set_text_color(ui.dir_lbl[i], on ? UI_COLOR_ACCENT : UI_COLOR_INACTIVE, 0);
+        set_font(ui.dir_lbl[i], on ? &lv_font_montserrat_48 : &lv_font_montserrat_28);
     }
 
     // Op mode
@@ -300,19 +351,17 @@ static void refresh_driver(const dash_snapshot_t *snap)
     };
     uint8_t m = s->opmode <= OPMODE_CHARGING ? s->opmode : OPMODE_OFF;
     set_text(ui.mode_icon, mode_style[m].icon);
-    lv_obj_set_style_text_color(ui.mode_icon, lv_color_hex(mode_style[m].color), 0);
+    set_text_color(ui.mode_icon, mode_style[m].color, 0);
     set_text(ui.mode_lbl, dash_opmode_text(s->opmode));
     snprintf(buf, sizeof(buf), "Plug: %s\nOBC: %s", s->plug_inserted ? "Inserted" : "Not inserted",
              dash_obc_text(s->obc_volt_stat));
     set_text(ui.plug_lbl, buf);
-    lv_obj_set_style_text_color(ui.plug_icon,
-                                lv_color_hex(s->plug_inserted ? UI_COLOR_PLUG : UI_COLOR_INACTIVE), 0);
+    set_text_color(ui.plug_icon, s->plug_inserted ? UI_COLOR_PLUG : UI_COLOR_INACTIVE, 0);
 
     ui.fault = s->inverter_error;
-    if (ui.fault) {
-        lv_obj_remove_flag(ui.fault_lbl, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_add_flag(ui.fault_lbl, LV_OBJ_FLAG_HIDDEN);
+    set_hidden(ui.fault_lbl, !ui.fault);
+    if (!ui.fault) {
+        set_opa(ui.fault_lbl, LV_OPA_COVER);  // don't reappear mid-blink at 20 %
     }
 
     // State of charge, range, low-battery warning
@@ -321,15 +370,14 @@ static void refresh_driver(const dash_snapshot_t *snap)
     lv_bar_set_value(ui.soc_bar, soc_known ? (int32_t)lroundf(soc < 0 ? 0 : (soc > 100 ? 100 : soc)) : 0,
                      LV_ANIM_OFF);
     ui.soc_critical = dash_soc_critical(s);
-    lv_obj_set_style_bg_color(ui.soc_bar,
-                              lv_color_hex(soc_known && soc < DASH_WARN_SOC_PCT ? UI_COLOR_RED : UI_COLOR_SOC_OK),
-                              LV_PART_INDICATOR);
+    set_bg_color(ui.soc_bar, soc_known && soc < DASH_WARN_SOC_PCT ? UI_COLOR_RED : UI_COLOR_SOC_OK,
+                 LV_PART_INDICATOR);
     if (ui.soc_critical) {
         // Critically low: don't show the number — flash red and warn.
         set_text(ui.soc_lbl, "LOW");
-        lv_obj_set_style_text_color(ui.soc_lbl, lv_color_hex(0xFF2A2A), 0);
-        lv_obj_set_style_shadow_width(ui.soc_bar, 14, LV_PART_MAIN);
-        lv_obj_remove_flag(ui.low_banner, LV_OBJ_FLAG_HIDDEN);
+        set_text_color(ui.soc_lbl, 0xFF2A2A, 0);
+        set_shadow_width(ui.soc_bar, 14);
+        set_hidden(ui.low_banner, false);
     } else {
         if (soc_known) {
             snprintf(buf, sizeof(buf), "%ld%%", lroundf(soc));
@@ -337,11 +385,11 @@ static void refresh_driver(const dash_snapshot_t *snap)
             snprintf(buf, sizeof(buf), "--%%");
         }
         set_text(ui.soc_lbl, buf);
-        lv_obj_set_style_text_color(ui.soc_lbl, lv_color_hex(0xCCCCCC), 0);
-        lv_obj_set_style_shadow_width(ui.soc_bar, 0, LV_PART_MAIN);
-        lv_obj_add_flag(ui.low_banner, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_set_style_opa(ui.soc_lbl, LV_OPA_COVER, 0);
-        lv_obj_set_style_opa(ui.soc_bar, LV_OPA_COVER, 0);
+        set_text_color(ui.soc_lbl, 0xCCCCCC, 0);
+        set_shadow_width(ui.soc_bar, 0);
+        set_hidden(ui.low_banner, true);
+        set_opa(ui.soc_lbl, LV_OPA_COVER);
+        set_opa(ui.soc_bar, LV_OPA_COVER);
     }
     float range = dash_range(s, cfg);
     if (isfinite(range)) {
@@ -355,9 +403,9 @@ static void refresh_driver(const dash_snapshot_t *snap)
     if (eta >= 0) {
         snprintf(buf, sizeof(buf), LV_SYMBOL_CHARGE " ~%dh %02dm to full", eta / 60, eta % 60);
         set_text(ui.eta_lbl, buf);
-        lv_obj_remove_flag(ui.eta_lbl, LV_OBJ_FLAG_HIDDEN);
+        set_hidden(ui.eta_lbl, false);
     } else {
-        lv_obj_add_flag(ui.eta_lbl, LV_OBJ_FLAG_HIDDEN);
+        set_hidden(ui.eta_lbl, true);
     }
 
     // Odometer
@@ -521,7 +569,7 @@ static void refresh_service(const dash_snapshot_t *snap)
     set_text(ui.v_plug, s->plug_inserted ? "Inserted" : "Not inserted");
     set_text(ui.v_obc, dash_obc_text(s->obc_volt_stat));
     set_text(ui.v_err, s->inverter_error ? "FAULT" : "OK");
-    lv_obj_set_style_text_color(ui.v_err, lv_color_hex(s->inverter_error ? UI_COLOR_RED : UI_COLOR_TEXT), 0);
+    set_text_color(ui.v_err, s->inverter_error ? UI_COLOR_RED : UI_COLOR_TEXT, 0);
     set_text(ui.v_can, dash_can_state_text(snap->can_state));
     snprintf(buf, sizeof(buf), "%lu / %lu", (unsigned long)s->frames_rx, (unsigned long)s->frames_decoded);
     set_text(ui.v_frames, buf);
@@ -540,9 +588,12 @@ static void refresh_cb(lv_timer_t *t)
     (void)t;
     dash_snapshot_t snap;
     dash_model_snapshot(&snap);
-    refresh_driver(&snap);
+    // Only update the page on screen: redrawing the hidden one just steals
+    // time from touch handling.
     if (lv_tileview_get_tile_active(ui.tileview) == ui.tile_service) {
         refresh_service(&snap);
+    } else {
+        refresh_driver(&snap);
     }
 }
 
@@ -566,7 +617,8 @@ static void on_tile_changed(lv_event_t *e)
     (void)e;
     dash_snapshot_t snap;
     dash_model_snapshot(&snap);
-    refresh_service(&snap);  // no stale values when the page slides in
+    refresh_driver(&snap);   // no stale values on the page that just slid in
+    refresh_service(&snap);
 }
 
 void dash_ui_create(lv_obj_t *screen)
@@ -595,9 +647,16 @@ void dash_ui_create(lv_obj_t *screen)
     lv_obj_set_style_radius(bezel, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_border_width(bezel, 6, 0);
     lv_obj_set_style_border_color(bezel, lv_color_hex(UI_COLOR_BEZEL), 0);
-    lv_obj_set_style_shadow_width(bezel, 16, 0);
-    lv_obj_set_style_shadow_color(bezel, lv_color_hex(UI_COLOR_BEZEL), 0);
-    lv_obj_set_style_shadow_opa(bezel, LV_OPA_50, 0);
+    // A thin darker inner ring instead of a blurred glow: a shadow this size is
+    // expensive to draw and was redrawn whenever anything near the edge changed.
+    lv_obj_set_style_outline_width(bezel, 0, 0);
+    lv_obj_t *inner = plain_obj(screen);
+    lv_obj_set_size(inner, SCREEN_W - 20, SCREEN_H - 20);
+    lv_obj_center(inner);
+    lv_obj_remove_flag(inner, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_radius(inner, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_border_width(inner, 2, 0);
+    lv_obj_set_style_border_color(inner, lv_color_hex(0x5A0714), 0);
 
     dash_snapshot_t snap;
     dash_model_snapshot(&snap);

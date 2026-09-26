@@ -107,23 +107,43 @@ double dash_odo_display(double odo_m, const dash_settings_t *cfg)
     return cfg->use_odo_miles ? odo_m / DASH_METERS_PER_MILE : odo_m / 1000.0;
 }
 
-void dash_test_data(dash_state_t *s, uint32_t t)
+// 0 → 1 → 0 linearly over one period (triangle wave).
+static float sweep(uint32_t t, uint32_t period_ms)
 {
-    s->voltage_v = 215 + (int)(215 * sin(t / 1000.0));
-    s->motor_rpm = 4500 + (int)(4500 * sin(t / 800.0));
-    s->inverter_error = (t / 5000) % 2 == 0;
+    uint32_t half = period_ms / 2;
+    uint32_t p = t % period_ms;
+    return p < half ? (float)p / half : (float)(period_ms - p) / half;
+}
 
-    s->inv_temp_c = 45 + (int)(45 * sin(t / 1200.0));
-    s->motor_temp_c = 45 + (int)(25 * sin(t / 1000.0));
+// Linear value from lo to hi and back again over one test cycle.
+static float ramp(uint32_t t, float lo, float hi)
+{
+    return lo + (hi - lo) * sweep(t, DASH_TEST_CYCLE_MS);
+}
 
-    s->obc_volt_stat = (t / 3000) % 4;
-    s->plug_stat = ((t / 4000) % 2 == 0) ? 0x08 : 0x00;
-    s->plug_inserted = (s->plug_stat == 0x08);
-    s->soc_pct = 50.0f + 50.0f * sinf(t / 800.0f);
-    s->current_a = (int)(80 * sin(t / 800.0));
-    s->drive_dir = (int8_t)(int)(2 * sin(t / 800.0));
-    s->opmode = (uint8_t)(2 + (int)(2 * sin(t / 800.0)));
-    s->aux_12v = 13.2f + 2.2f * sinf(t / 1100.0f);  // sweeps 11.0-15.4 V
+void dash_test_data(dash_state_t *s, uint32_t t, const dash_settings_t *cfg)
+{
+    // Every gauge sweeps its full range: bottom → top over the first half of
+    // the cycle, then back down, so each needle and readout can be checked.
+    float top_kph = cfg->use_mph ? dash_speed_max(cfg) / dash_kph_to_mph(1.0f) : dash_speed_max(cfg);
+    s->motor_rpm = ramp(t, 0.0f, top_kph / dash_rpm_to_kph(1.0f));
+    s->voltage_v = ramp(t, 0.0f, 450.0f);
+    s->current_a = ramp(t, 150.0f, -250.0f);   // full regen → full throttle (redline)
+    s->aux_12v = ramp(t, 10.0f, 16.0f);
+    s->inv_temp_c = ramp(t, 0.0f, 90.0f);
+    s->motor_temp_c = ramp(t, 0.0f, 90.0f);
+    s->soc_pct = ramp(t, 100.0f, 0.0f);         // full → empty, so the low-battery warning shows
+
+    // Discrete states step through their values in order, a few seconds each.
+    uint32_t step = t / DASH_TEST_STEP_MS;
+    static const int8_t dirs[3] = { 1, 0, -1 };  // F, N, R
+    s->drive_dir = dirs[step % 3];
+    s->opmode = (uint8_t)(step % 5);             // Off, Run, Pre Charge, Pre Charge Failed, Charging
+    s->obc_volt_stat = (uint8_t)(step % 4);      // Idle, AC present, Charging, Active/Other
+    s->plug_inserted = (step % 2) == 1;
+    s->plug_stat = s->plug_inserted ? 0x08 : 0x00;
+    // Inverter fault for one step in every cycle, not constantly flashing.
+    s->inverter_error = (t % DASH_TEST_CYCLE_MS) >= DASH_TEST_CYCLE_MS - DASH_TEST_STEP_MS;
 }
 
 const char *dash_can_state_text(dash_can_state_t st)

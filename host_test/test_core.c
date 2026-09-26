@@ -203,6 +203,53 @@ static void test_calc(void)
     CHECK_NEAR(dash_odo_display(1234567, &kph), 1234.567, 1e-6);
 }
 
+static void test_test_mode(void)
+{
+    dash_settings_t mph = { .use_mph = true }, kph = { 0 };
+    dash_state_t s;
+    dash_state_init(&s);
+
+    // Start of the cycle: everything at the bottom of its range, SOC full.
+    dash_test_data(&s, 0, &mph);
+    CHECK_NEAR(dash_speed(&s, &mph), 0, 1e-3);
+    CHECK_NEAR(s.voltage_v, 0, 1e-3);
+    CHECK_NEAR(s.current_a, 150, 1e-3);
+    CHECK_NEAR(s.aux_12v, 10, 1e-3);
+    CHECK_NEAR(s.inv_temp_c, 0, 1e-3);
+    CHECK_NEAR(s.soc_pct, 100, 1e-3);
+
+    // Quarter cycle: halfway up, linearly.
+    dash_test_data(&s, DASH_TEST_CYCLE_MS / 4, &mph);
+    CHECK_NEAR(dash_speed(&s, &mph), 60, 0.01);
+    CHECK_NEAR(s.voltage_v, 225, 0.01);
+    CHECK_NEAR(s.current_a, -50, 0.01);
+    CHECK_NEAR(s.soc_pct, 50, 0.01);
+
+    // Half cycle: full scale in whichever unit is selected.
+    dash_test_data(&s, DASH_TEST_CYCLE_MS / 2, &mph);
+    CHECK_NEAR(dash_speed(&s, &mph), 120, 0.01);
+    CHECK_NEAR(s.current_a, -250, 1e-3);
+    CHECK_NEAR(s.motor_temp_c, 90, 1e-3);
+    CHECK_NEAR(s.aux_12v, 16, 1e-3);
+    CHECK_NEAR(s.soc_pct, 0, 1e-3);
+    dash_test_data(&s, DASH_TEST_CYCLE_MS / 2, &kph);
+    CHECK_NEAR(dash_speed(&s, &kph), 160, 0.01);
+
+    // Three quarters: back down symmetrically.
+    dash_test_data(&s, DASH_TEST_CYCLE_MS * 3 / 4, &mph);
+    CHECK_NEAR(dash_speed(&s, &mph), 60, 0.01);
+
+    // Discrete states step in order; fault only in the last step of a cycle.
+    dash_test_data(&s, 0, &mph);
+    CHECK(s.drive_dir == 1 && s.opmode == OPMODE_OFF && !s.inverter_error);
+    dash_test_data(&s, DASH_TEST_STEP_MS, &mph);
+    CHECK(s.drive_dir == 0 && s.opmode == OPMODE_RUN);
+    dash_test_data(&s, 2 * DASH_TEST_STEP_MS, &mph);
+    CHECK(s.drive_dir == -1 && s.opmode == OPMODE_PRECHARGE);
+    dash_test_data(&s, DASH_TEST_CYCLE_MS - 1, &mph);
+    CHECK(s.inverter_error);
+}
+
 int main(void)
 {
     test_1da_inverter();
@@ -211,6 +258,7 @@ int main(void)
     test_31a_zombieverter();
     test_ignored_frames();
     test_calc();
+    test_test_mode();
     printf("%d checks, %d failures\n", checks, failures);
     return failures ? 1 : 0;
 }

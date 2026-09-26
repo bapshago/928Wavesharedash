@@ -158,6 +158,8 @@ void ui_gauge_create(ui_gauge_t *g, lv_obj_t *parent, const ui_gauge_cfg_t *cfg,
     lv_obj_set_style_bg_color(hub, lv_color_hex(UI_COLOR_TEXT), 0);
 
     g->shown_pct = 0.0f;
+    g->drawn_pct = -1.0f;  // force the first draw
+    g->arc_red = false;
     ui_gauge_set_value(g, NAN);
 }
 
@@ -193,18 +195,25 @@ void ui_gauge_set_value(ui_gauge_t *g, float value)
         g->shown_pct = target;
     }
 
-    const float pct = g->shown_pct;
-    lv_arc_set_value(g->arc, (int32_t)lroundf(pct * SCALE_MAX));
     // Same cue as the web dash: arc turns red within the first 5 % of the sweep.
-    lv_obj_set_style_arc_color(g->arc, lv_color_hex(target < 0.05f ? UI_COLOR_RED : UI_COLOR_ARC),
-                               LV_PART_INDICATOR);
+    const bool red = target < 0.05f;
+    if (red != g->arc_red) {
+        g->arc_red = red;
+        lv_obj_set_style_arc_color(g->arc, lv_color_hex(red ? UI_COLOR_RED : UI_COLOR_ARC), LV_PART_INDICATOR);
+    }
 
-    const float rad = (START_DEG + pct * SWEEP_DEG) * (float)M_PI / 180.0f;
-    const float len = (float)(g->radius - arc_width(g) - (g->large ? 10 : 4));
-    const float c = (float)(cont_size(g) / 2);
-    g->pts[1].x = c + len * cosf(rad);
-    g->pts[1].y = c + len * sinf(rad);
-    lv_line_set_points(g->needle, g->pts, 2);
+    // Only move the needle when it actually moved (a redraw every tick slows the whole screen).
+    const float pct = g->shown_pct;
+    if (pct != g->drawn_pct) {
+        g->drawn_pct = pct;
+        lv_arc_set_value(g->arc, (int32_t)lroundf(pct * SCALE_MAX));
+        const float rad = (START_DEG + pct * SWEEP_DEG) * (float)M_PI / 180.0f;
+        const float len = (float)(g->radius - arc_width(g) - (g->large ? 10 : 4));
+        const float c = (float)(cont_size(g) / 2);
+        g->pts[1].x = c + len * cosf(rad);
+        g->pts[1].y = c + len * sinf(rad);
+        lv_line_set_points(g->needle, g->pts, 2);
+    }
 
     char buf[16];
     if (!isfinite(value)) {
@@ -214,5 +223,7 @@ void ui_gauge_set_value(ui_gauge_t *g, float value)
     } else {
         snprintf(buf, sizeof(buf), "%.*f %s", g->decimals, value, g->unit);
     }
-    lv_label_set_text(g->value_lbl, buf);
+    if (strcmp(lv_label_get_text(g->value_lbl), buf) != 0) {
+        lv_label_set_text(g->value_lbl, buf);
+    }
 }

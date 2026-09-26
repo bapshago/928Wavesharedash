@@ -62,8 +62,12 @@ double dash_odo_integrate(double odo_m, float motor_rpm, uint32_t dt_ms);
 // Odometer reading in the selected unit (miles or km).
 double dash_odo_display(double odo_m, const dash_settings_t *cfg);
 
-// Fill *s with the same animated fake data as generateTestData() did.
-void dash_test_data(dash_state_t *s, uint32_t t_ms);
+// Test mode: every gauge sweeps linearly from the bottom of its range to the
+// top and back over DASH_TEST_CYCLE_MS (SOC runs the other way, 100 → 0 %);
+// on/off states step through their values every DASH_TEST_STEP_MS.
+#define DASH_TEST_CYCLE_MS 20000
+#define DASH_TEST_STEP_MS  3000
+void dash_test_data(dash_state_t *s, uint32_t t_ms, const dash_settings_t *cfg);
 
 #ifdef __cplusplus
 }

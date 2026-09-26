@@ -100,7 +100,7 @@ Options under `idf.py menuconfig` → **928 EV Dash**:
 | CAN TX / RX GPIO | 5 / 4 | Transceiver pins |
 | CAN bitrate | 500000 | |
 | Listen-only | off | On = the dash never ACKs or transmits. Leave off on a bench with only one transmitter |
-| Test mode | off | Animated fake data, no CAN needed (the web dash's `TEST_MODE`) |
+| Test mode | off | No CAN needed: every gauge sweeps its full range up and back down over 20 s, SOC 100 → 0 %, and on/off states step through in turn. Test-mode distance is not added to the odometer |
 | Backlight brightness | 100 % | |
 
 The defaults target **ESP32-P4 silicon rev v1.x** (the chip on our board is

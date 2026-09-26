@@ -34,7 +34,6 @@ static const char *TAG = "dash_model";
 #define NVS_NAMESPACE        "apdash"
 #define ODO_TICK_MS          250      // integrate ~4x/second
 #define ODO_SAVE_INTERVAL_MS 30000    // flash-wear limit: worst case a power cut loses 30 s of distance
-#define TEST_REFRESH_MS      500      // generateTestData() cadence on the web dash
 
 typedef struct {
     uint32_t id;
@@ -48,8 +47,6 @@ static dash_settings_t   s_settings;
 static double            s_odo_m;
 static dash_can_state_t  s_can_state = DASH_CAN_DOWN;
 static nvs_handle_t      s_nvs;
-static QueueHandle_t     s_rx_queue;
-static twai_node_handle_t s_node;
 
 static inline uint32_t now_ms(void) { return (uint32_t)(esp_timer_get_time() / 1000); }
 
@@ -141,6 +138,10 @@ static esp_err_t load_persisted(void)
     return ESP_OK;
 }
 
+#if !CONFIG_DASH_TEST_MODE  // test mode never starts CAN
+static QueueHandle_t      s_rx_queue;
+static twai_node_handle_t s_node;
+
 // ── CAN ────────────────────────────────────────────────────────────────────
 
 static bool IRAM_ATTR on_rx_done(twai_node_handle_t node, const twai_rx_done_event_data_t *edata, void *ctx)
@@ -230,12 +231,13 @@ static esp_err_t can_start(void)
     return ESP_OK;
 }
 
+#endif  // !CONFIG_DASH_TEST_MODE
+
 // ── odometer + test data ───────────────────────────────────────────────────
 
 static void housekeeping_task(void *arg)
 {
     uint32_t last_save = now_ms();
-    uint32_t last_test = 0;
     double last_saved_m = s_odo_m;
     TickType_t wake = xTaskGetTickCount();
 
@@ -245,12 +247,11 @@ static void housekeeping_task(void *arg)
 
         xSemaphoreTake(s_lock, portMAX_DELAY);
 #if CONFIG_DASH_TEST_MODE
-        if (t - last_test >= TEST_REFRESH_MS) {
-            last_test = t;
-            dash_test_data(&s_state, t);
-        }
-#endif
+        // Fake data only: don't add bench-test "miles" to the car's odometer.
+        dash_test_data(&s_state, t, &s_settings);
+#else
         s_odo_m = dash_odo_integrate(s_odo_m, s_state.motor_rpm, ODO_TICK_MS);
+#endif
         double odo = s_odo_m;
         xSemaphoreGive(s_lock);
 
@@ -264,7 +265,6 @@ static void housekeeping_task(void *arg)
             }
         }
     }
-    (void)last_test;
 }
 
 esp_err_t dash_model_start(void)

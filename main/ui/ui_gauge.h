@@ -52,6 +52,8 @@ typedef struct {
     uint8_t     major_ticks;
     uint8_t     decimals;
     float       shown_pct;   // smoothed needle position (the web used a 0.3 s CSS transition)
+    float       drawn_pct;   // position last drawn, to skip redundant redraws
+    bool        arc_red;
 } ui_gauge_t;
 
 // Create the gauge centred at (cx, cy) inside parent.
