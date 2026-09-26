@@ -34,7 +34,7 @@ Carried over from the web dash:
 - Estimated time to full while charging
 - Plug and on-board charger status; flashing inverter fault warning
 - Odometer (miles or km), seeded to 150,000 miles on first boot and integrated from motor speed
-- Service / Diagnostics screen (swipe left) with speed, temperature and odometer unit
+- Service / Diagnostics screen (tap the arrow on the right edge, or swipe left) with speed, temperature and odometer unit
   toggles and raw readings, including the ZombieVerter 0x31A frame in hex
 - Unit settings and the odometer persist in flash (NVS); the odometer is written at
   most every 30 s to limit flash wear

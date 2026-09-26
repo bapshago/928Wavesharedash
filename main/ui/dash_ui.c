@@ -99,6 +99,30 @@ static void fmt_thousands(char *buf, size_t n, long v)
     buf[o] = '\0';
 }
 
+static void on_nav_clicked(lv_event_t *e)
+{
+    dash_ui_show_page((int)(intptr_t)lv_event_get_user_data(e));
+}
+
+// Tappable page arrow at the screen edge. The hit area is much larger than the
+// glyph so it's easy to hit on the move; swiping between pages also works.
+static void nav_button(lv_obj_t *tile, const char *symbol, lv_align_t align, int x_ofs, int page)
+{
+    lv_obj_t *btn = plain_obj(tile);
+    lv_obj_set_size(btn, 72, 220);  // narrow enough to stay clear of the side gauges
+    lv_obj_align(btn, align, x_ofs, 0);
+    lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(btn, on_nav_clicked, LV_EVENT_CLICKED, (void *)(intptr_t)page);
+    // Text colour is inherited by the arrow; brighten it while pressed so the tap registers.
+    lv_obj_set_style_text_color(btn, lv_color_hex(0x777777), 0);
+    lv_obj_set_style_text_color(btn, lv_color_hex(UI_COLOR_ACCENT), LV_STATE_PRESSED);
+
+    lv_obj_t *arrow = lv_label_create(btn);
+    lv_obj_set_style_text_font(arrow, &lv_font_montserrat_40, 0);
+    lv_label_set_text(arrow, symbol);
+    lv_obj_center(arrow);
+}
+
 // ── driver page ────────────────────────────────────────────────────────────
 
 static void build_driver(lv_obj_t *t)
@@ -218,9 +242,7 @@ static void build_driver(lv_obj_t *t)
     lv_obj_align(ui.eta_lbl, LV_ALIGN_TOP_MID, 0, 746);
     lv_obj_add_flag(ui.eta_lbl, LV_OBJ_FLAG_HIDDEN);
 
-    // Swipe hint toward the service page.
-    lv_obj_t *hint = label(t, &lv_font_montserrat_28, 0x333333, LV_SYMBOL_RIGHT);
-    lv_obj_align(hint, LV_ALIGN_RIGHT_MID, -16, 0);
+    nav_button(t, LV_SYMBOL_RIGHT, LV_ALIGN_RIGHT_MID, 0, 1);  // → service page
 
     // Critical low-battery banner (SOC < 10 %): impossible to miss.
     ui.low_banner = plain_obj(t);
@@ -406,8 +428,7 @@ static lv_obj_t *data_row(lv_obj_t *col, const char *name)
 
 static void build_service(lv_obj_t *t)
 {
-    lv_obj_t *hint = label(t, &lv_font_montserrat_28, 0x333333, LV_SYMBOL_LEFT);
-    lv_obj_align(hint, LV_ALIGN_LEFT_MID, 16, 0);
+    nav_button(t, LV_SYMBOL_LEFT, LV_ALIGN_LEFT_MID, 0, 0);  // ← driver page
 
     // Content column kept inside the round glass; scrolls if it doesn't fit.
     lv_obj_t *col = plain_obj(t);
