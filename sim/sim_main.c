@@ -2,8 +2,9 @@
 // main/core code as the firmware against LVGL on the PC and writes PNG
 // screenshots of the 800x800 round panel.
 //
-//   dash_sim <scenario> <out.png>     one scenario
-//   dash_sim --all <out_dir>          every scenario → <out_dir>/<scenario>.png
+//   dash_sim <scenario> <left|right> <out.png>   one scenario on one screen
+//   dash_sim --all <out_dir>                      every scenario, both screens →
+//                                                 <out_dir>/<scenario>_<side>.png
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +43,7 @@ static void run_for(uint32_t ms)
     }
 }
 
-static int render(const char *scenario, const char *out_path)
+static int render(const char *scenario, dash_side_t side, const char *out_path)
 {
     g_ms = 100000;  // arbitrary non-zero time so "last frame" reads sensibly
     if (!sim_model_init(scenario, g_ms)) {
@@ -52,7 +53,7 @@ static int render(const char *scenario, const char *out_path)
 
     lv_obj_t *scr = lv_obj_create(NULL);
     lv_screen_load(scr);
-    dash_ui_create(scr);
+    dash_ui_create(scr, side);
     if (strcmp(scenario, "service") == 0) {
         dash_ui_show_page(1);
     }
@@ -86,8 +87,10 @@ static int render(const char *scenario, const char *out_path)
 
 int main(int argc, char **argv)
 {
-    if (argc != 3) {
-        fprintf(stderr, "usage: %s <scenario> <out.png> | --all <out_dir>\nscenarios:", argv[0]);
+    bool all = argc == 3 && strcmp(argv[1], "--all") == 0;
+    bool one = argc == 4 && (strcmp(argv[2], "left") == 0 || strcmp(argv[2], "right") == 0);
+    if (!all && !one) {
+        fprintf(stderr, "usage: %s <scenario> <left|right> <out.png> | --all <out_dir>\nscenarios:", argv[0]);
         for (int i = 0; sim_scenarios[i]; i++) {
             fprintf(stderr, " %s", sim_scenarios[i]);
         }
@@ -101,14 +104,17 @@ int main(int argc, char **argv)
     lv_display_set_buffers(disp, g_draw_buf, NULL, sizeof(g_draw_buf), LV_DISPLAY_RENDER_MODE_FULL);
     lv_display_set_flush_cb(disp, flush_cb);
 
-    if (strcmp(argv[1], "--all") == 0) {
+    if (all) {
+        static const char *const side_name[2] = { "left", "right" };
         int rc = 0;
         for (int i = 0; sim_scenarios[i]; i++) {
-            char path[512];
-            snprintf(path, sizeof(path), "%s/%s.png", argv[2], sim_scenarios[i]);
-            rc |= render(sim_scenarios[i], path);
+            for (int side = 0; side < 2; side++) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/%s_%s.png", argv[2], sim_scenarios[i], side_name[side]);
+                rc |= render(sim_scenarios[i], (dash_side_t)side, path);
+            }
         }
         return rc;
     }
-    return render(argv[1], argv[2]);
+    return render(argv[1], strcmp(argv[2], "right") == 0 ? DASH_SIDE_RIGHT : DASH_SIDE_LEFT, argv[3]);
 }

@@ -22,7 +22,7 @@ typedef struct {
 } ui_zone_t;
 
 typedef struct {
-    const char *name;        // "Voltage", "Speed", ...
+    const char *name;        // "Voltage", "Speed", ...; NULL = no name label
     const char *unit;        // shown after the value ("V") or under it on large gauges
     float       min;         // min may be greater than max for an inverted scale
     float       max;
@@ -30,6 +30,8 @@ typedef struct {
     bool        large;       // numbered ticks, big readout, unit on its own line
     uint8_t     major_ticks; // number of numbered intervals on large gauges (e.g. 8 → 0,20..160)
     uint8_t     decimals;    // digits after the point in the readout (web dash: 0)
+    const lv_font_t *value_font;  // readout font; NULL = picked from the radius
+    const lv_font_t *label_font;  // tick numbers on large gauges; NULL = picked from the radius
     ui_zone_t   zones[UI_GAUGE_MAX_ZONES];
     uint8_t     zone_count;
 } ui_gauge_cfg_t;

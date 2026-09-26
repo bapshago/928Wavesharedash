@@ -19,19 +19,21 @@ static struct {
     lv_obj_t *tile_driver;
     lv_obj_t *tile_service;
 
-    // Driver page
-    ui_gauge_t speed, voltage, current, aux12v, inv_temp, motor_temp;
-    lv_obj_t *dir_lbl[3];  // R, N, F
-    lv_obj_t *fault_lbl;
-    lv_obj_t *mode_icon, *mode_lbl, *plug_lbl;
-    lv_obj_t *soc_bar, *soc_lbl, *range_lbl, *eta_lbl, *plug_icon;
-    lv_obj_t *odo_lbl, *odo_unit_lbl;
-    lv_obj_t *low_banner;
+    dash_side_t side;
+
+    // Driver page. Only the widgets for this screen's side are created.
+    ui_gauge_t speed;                                              // left
+    lv_obj_t *dir_row, *dir_lbl[3];                                // left: R, N, F
+    lv_obj_t *soc_bar, *soc_lbl, *range_lbl, *eta_lbl, *plug_icon; // left
+    lv_obj_t *odo_lbl, *odo_unit_lbl, *low_banner;                 // left
+    ui_gauge_t voltage, current, aux12v, inv_temp, motor_temp;     // right
+    lv_obj_t *mode_icon, *mode_lbl, *plug_lbl;                     // right
+    lv_obj_t *fault_lbl;                                           // both
 
     // Service page
     lv_obj_t *btn_speed, *btn_temp, *btn_odo;
-    lv_obj_t *v_odo, *v_voltage, *v_current, *v_aux, *v_raw31a, *v_inv, *v_motor, *v_soc,
-             *v_mode, *v_dir, *v_plug, *v_obc, *v_err, *v_can, *v_frames, *v_last;
+    lv_obj_t *v_odo, *v_voltage, *v_current, *v_aux, *v_inv, *v_motor, *v_soc,
+             *v_mode, *v_dir, *v_plug, *v_obc, *v_err, *v_can, *v_frames;
 
     bool blink_on;
     bool soc_critical;
@@ -174,92 +176,93 @@ static void nav_button(lv_obj_t *tile, const char *symbol, lv_align_t align, int
     lv_obj_center(arrow);
 }
 
-// ── driver page ────────────────────────────────────────────────────────────
+// ── driver page: shared pieces ─────────────────────────────────────────────
 
-static void build_driver(lv_obj_t *t)
+static lv_obj_t *make_fault_label(lv_obj_t *t, const lv_font_t *font)
 {
-    lv_obj_t *mark = label(t, &lv_font_montserrat_20, UI_COLOR_WORDMARK, "ANGRY PIXIE GARAGE");
-    lv_obj_set_style_text_letter_space(mark, 5, 0);
-    lv_obj_align(mark, LV_ALIGN_TOP_MID, 0, 52);
+    lv_obj_t *l = label(t, font, UI_COLOR_RED, LV_SYMBOL_WARNING " INVERTER FAULT");
+    lv_obj_add_flag(l, LV_OBJ_FLAG_HIDDEN);
+    return l;
+}
 
+static void refresh_fault(const dash_state_t *s)
+{
+    ui.fault = s->inverter_error;
+    set_hidden(ui.fault_lbl, !ui.fault);
+    if (!ui.fault) {
+        set_opa(ui.fault_lbl, LV_OPA_COVER);  // don't reappear mid-blink at 20 %
+    }
+}
+
+// ── left screen: speed, drive direction, odometer, charge ──────────────────
+//
+// The speed gauge fills the glass; everything else sits in its open bottom.
+
+#define L_CX 400
+#define L_CY 372
+#define L_R  305
+
+static void build_left(lv_obj_t *t)
+{
     const ui_gauge_cfg_t speed = {
-        .name = "Speed", .unit = "kph", .min = 0, .max = 160, .radius = 175,
-        .large = true, .major_ticks = 8,
+        .name = NULL, .unit = "kph", .min = 0, .max = 160, .radius = L_R,
+        .large = true, .major_ticks = 8, .value_font = &font_speed_120,
     };
-    ui_gauge_create(&ui.speed, t, &speed, 400, 290);
+    ui_gauge_create(&ui.speed, t, &speed, L_CX, L_CY);
 
-    // Small gauges: Voltage + 12V on the left, Inverter + Motor on the right,
-    // the (larger) current gauge bottom-centre — same grouping as the web dash.
-    const ui_gauge_cfg_t voltage = { .name = "Voltage", .unit = "V", .min = 0, .max = 450, .radius = 62 };
-    const ui_gauge_cfg_t aux = {
-        .name = "12V Batt", .unit = "V", .min = 10, .max = 16, .radius = 62, .decimals = 1,
-        .zones = { { 0.0f, 0.25f, UI_COLOR_RED }, { 0.8333f, 1.0f, UI_COLOR_RED } },  // <11.5 V, >15 V
-        .zone_count = 2,
-    };
-    const ui_gauge_cfg_t inv = {
-        .name = "Inverter", .unit = "°C", .min = 0, .max = 90, .radius = 62,
-        .zones = { { 0.8f, 1.0f, UI_COLOR_RED } }, .zone_count = 1,
-    };
-    ui_gauge_cfg_t motor = inv;
-    motor.name = "Motor";
-    // Inverted: +150 A regen at the start, -250 A throttle at the end, so
-    // throttle swings the needle clockwise. Green = regen, red = 200-250 A.
-    const ui_gauge_cfg_t current = {
-        .name = "Current", .unit = "A", .min = 150, .max = -250, .radius = 80,
-        .zones = { { 0.0f, 0.375f, UI_COLOR_GREEN_ZONE }, { 0.875f, 1.0f, UI_COLOR_RED } },
-        .zone_count = 2,
-    };
-    ui_gauge_create(&ui.voltage, t, &voltage, 138, 262);
-    ui_gauge_create(&ui.aux12v, t, &aux, 138, 470);
-    ui_gauge_create(&ui.inv_temp, t, &inv, 662, 262);
-    ui_gauge_create(&ui.motor_temp, t, &motor, 662, 470);
-    ui_gauge_create(&ui.current, t, &current, 400, 592);
+    // Shop wordmark above the needle pivot, like a maker's name on a dial face.
+    lv_obj_t *mark = label(t, &lv_font_montserrat_20, UI_COLOR_WORDMARK, "ANGRY PIXIE GARAGE");
+    lv_obj_set_style_text_letter_space(mark, 4, 0);
+    lv_obj_align(mark, LV_ALIGN_TOP_MID, 0, L_CY - 92);
 
-    // R N F in the speed gauge's open bottom.
-    lv_obj_t *dir = plain_obj(t);
-    lv_obj_set_size(dir, 220, 52);
-    lv_obj_align(dir, LV_ALIGN_TOP_MID, 0, 420);
-    lv_obj_set_flex_flow(dir, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(dir, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_END);
-    lv_obj_set_style_pad_column(dir, 26, 0);
+    ui.fault_lbl = make_fault_label(t, &lv_font_montserrat_28);
+    lv_obj_align(ui.fault_lbl, LV_ALIGN_TOP_MID, 0, L_CY - 160);
+
+    // R N F under the speed readout; while charging the same spot shows the
+    // time to full instead (the car isn't going anywhere).
+    ui.dir_row = plain_obj(t);
+    lv_obj_set_size(ui.dir_row, 260, 56);
+    lv_obj_align(ui.dir_row, LV_ALIGN_TOP_MID, 0, 606);
+    lv_obj_set_flex_flow(ui.dir_row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(ui.dir_row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_END);
+    lv_obj_set_style_pad_column(ui.dir_row, 34, 0);
     static const char *const dir_txt[3] = { "R", "N", "F" };
     for (int i = 0; i < 3; i++) {
-        ui.dir_lbl[i] = label(dir, &lv_font_montserrat_28, UI_COLOR_INACTIVE, dir_txt[i]);
+        ui.dir_lbl[i] = label(ui.dir_row, &lv_font_montserrat_28, UI_COLOR_INACTIVE, dir_txt[i]);
     }
+    ui.eta_lbl = label(t, &lv_font_montserrat_24, UI_COLOR_INFO, "");
+    lv_obj_align(ui.eta_lbl, LV_ALIGN_TOP_MID, 0, 626);
+    lv_obj_add_flag(ui.eta_lbl, LV_OBJ_FLAG_HIDDEN);
 
-    ui.fault_lbl = label(t, &lv_font_montserrat_20, UI_COLOR_RED, LV_SYMBOL_WARNING " INVERTER FAULT");
-    lv_obj_align(ui.fault_lbl, LV_ALIGN_TOP_MID, 0, 478);
-    lv_obj_add_flag(ui.fault_lbl, LV_OBJ_FLAG_HIDDEN);
+    // State of charge bar with % and range underneath.
+    ui.plug_icon = label(t, &lv_font_montserrat_24, UI_COLOR_INACTIVE, LV_SYMBOL_CHARGE);
+    lv_obj_align(ui.plug_icon, LV_ALIGN_TOP_MID, -222, 670);
+    ui.soc_bar = lv_bar_create(t);
+    lv_obj_set_size(ui.soc_bar, 400, 26);
+    lv_obj_align(ui.soc_bar, LV_ALIGN_TOP_MID, 0, 670);
+    lv_bar_set_range(ui.soc_bar, 0, 100);
+    lv_obj_set_style_bg_color(ui.soc_bar, lv_color_hex(UI_COLOR_BAR_BG), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(ui.soc_bar, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_radius(ui.soc_bar, 13, LV_PART_MAIN);
+    lv_obj_set_style_radius(ui.soc_bar, 13, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(ui.soc_bar, lv_color_hex(UI_COLOR_SOC_OK), LV_PART_INDICATOR);
+    lv_obj_set_style_shadow_color(ui.soc_bar, lv_color_hex(UI_COLOR_RED), LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(ui.soc_bar, 0, LV_PART_MAIN);
 
-    // Right of the current gauge: op mode + plug status (the web status box).
-    lv_obj_t *mode = plain_obj(t);
-    lv_obj_set_size(mode, 190, 90);
-    lv_obj_set_pos(mode, 505, 560);
-    lv_obj_set_flex_flow(mode, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(mode, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_set_style_pad_row(mode, 4, 0);
-    lv_obj_t *mode_row = plain_obj(mode);
-    lv_obj_set_size(mode_row, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_set_flex_flow(mode_row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_style_pad_column(mode_row, 8, 0);
-    ui.mode_icon = label(mode_row, &lv_font_montserrat_24, UI_COLOR_TEXT_DIM, LV_SYMBOL_POWER);
-    ui.mode_lbl = label(mode_row, &lv_font_montserrat_24, UI_COLOR_TEXT, "--");
-    ui.plug_lbl = label(mode, &lv_font_montserrat_16, UI_COLOR_TEXT_MUTED, "");
+    ui.soc_lbl = label(t, &lv_font_montserrat_20, 0xCCCCCC, "--%");
+    lv_obj_align(ui.soc_lbl, LV_ALIGN_TOP_LEFT, 204, 700);
+    ui.range_lbl = label(t, &lv_font_montserrat_20, UI_COLOR_INFO, "-- mi");
+    lv_obj_align(ui.range_lbl, LV_ALIGN_TOP_RIGHT, -204, 700);
 
-    // Left of the current gauge: odometer.
-    lv_obj_t *odo = plain_obj(t);
-    lv_obj_set_size(odo, 200, 90);
-    lv_obj_set_pos(odo, 100, 560);
-    lv_obj_set_flex_flow(odo, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(odo, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_END);
-    lv_obj_set_style_pad_row(odo, 4, 0);
-    lv_obj_t *odo_cap = label(odo, &lv_font_montserrat_14, UI_COLOR_TEXT_MUTED, "ODO");
-    lv_obj_set_style_text_letter_space(odo_cap, 3, 0);
-    lv_obj_t *odo_row = plain_obj(odo);
+    // Odometer, centred at the bottom.
+    lv_obj_t *odo_row = plain_obj(t);
     lv_obj_set_size(odo_row, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_align(odo_row, LV_ALIGN_TOP_MID, 0, 730);
     lv_obj_set_flex_flow(odo_row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(odo_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_END);
+    lv_obj_set_flex_align(odo_row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(odo_row, 6, 0);
+    lv_obj_t *odo_cap = label(odo_row, &lv_font_montserrat_14, UI_COLOR_TEXT_MUTED, "ODO");
+    lv_obj_set_style_text_letter_space(odo_cap, 2, 0);
     ui.odo_lbl = label(odo_row, &lv_font_montserrat_24, 0xEEEEEE, "------");
     lv_obj_set_style_bg_color(ui.odo_lbl, lv_color_hex(0x1A1A1A), 0);
     lv_obj_set_style_bg_opa(ui.odo_lbl, LV_OPA_COVER, 0);
@@ -267,38 +270,13 @@ static void build_driver(lv_obj_t *t)
     lv_obj_set_style_border_width(ui.odo_lbl, 1, 0);
     lv_obj_set_style_radius(ui.odo_lbl, 5, 0);
     lv_obj_set_style_pad_hor(ui.odo_lbl, 8, 0);
-    lv_obj_set_style_pad_ver(ui.odo_lbl, 2, 0);
+    lv_obj_set_style_pad_ver(ui.odo_lbl, 1, 0);
     ui.odo_unit_lbl = label(odo_row, &lv_font_montserrat_16, UI_COLOR_INFO, "mi");
-
-    // State of charge bar with % and range underneath.
-    ui.plug_icon = label(t, &lv_font_montserrat_24, UI_COLOR_INACTIVE, LV_SYMBOL_CHARGE);
-    lv_obj_align(ui.plug_icon, LV_ALIGN_TOP_MID, -228, 686);
-    ui.soc_bar = lv_bar_create(t);
-    lv_obj_set_size(ui.soc_bar, 420, 28);
-    lv_obj_align(ui.soc_bar, LV_ALIGN_TOP_MID, 0, 684);
-    lv_bar_set_range(ui.soc_bar, 0, 100);
-    lv_obj_set_style_bg_color(ui.soc_bar, lv_color_hex(UI_COLOR_BAR_BG), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(ui.soc_bar, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_style_radius(ui.soc_bar, 14, LV_PART_MAIN);
-    lv_obj_set_style_radius(ui.soc_bar, 14, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(ui.soc_bar, lv_color_hex(UI_COLOR_SOC_OK), LV_PART_INDICATOR);
-    lv_obj_set_style_shadow_color(ui.soc_bar, lv_color_hex(UI_COLOR_RED), LV_PART_MAIN);
-    lv_obj_set_style_shadow_width(ui.soc_bar, 0, LV_PART_MAIN);
-
-    ui.soc_lbl = label(t, &lv_font_montserrat_20, 0xCCCCCC, "--%");
-    lv_obj_align(ui.soc_lbl, LV_ALIGN_TOP_LEFT, 196, 718);
-    ui.range_lbl = label(t, &lv_font_montserrat_20, UI_COLOR_INFO, "-- mi");
-    lv_obj_align(ui.range_lbl, LV_ALIGN_TOP_RIGHT, -196, 718);
-    ui.eta_lbl = label(t, &lv_font_montserrat_16, UI_COLOR_INFO, "");
-    lv_obj_align(ui.eta_lbl, LV_ALIGN_TOP_MID, 0, 746);
-    lv_obj_add_flag(ui.eta_lbl, LV_OBJ_FLAG_HIDDEN);
-
-    nav_button(t, LV_SYMBOL_RIGHT, LV_ALIGN_RIGHT_MID, 0, 1);  // → service page
 
     // Critical low-battery banner (SOC < 10 %): impossible to miss.
     ui.low_banner = plain_obj(t);
     lv_obj_set_size(ui.low_banner, SCREEN_W, 96);
-    lv_obj_set_pos(ui.low_banner, 0, 118);
+    lv_obj_set_pos(ui.low_banner, 0, 150);
     lv_obj_set_style_bg_opa(ui.low_banner, LV_OPA_COVER, 0);
     lv_obj_set_style_bg_color(ui.low_banner, lv_color_hex(UI_COLOR_WARN_BG), 0);
     lv_obj_set_style_border_side(ui.low_banner, LV_BORDER_SIDE_TOP | LV_BORDER_SIDE_BOTTOM, 0);
@@ -313,7 +291,7 @@ static void build_driver(lv_obj_t *t)
     lv_obj_add_flag(ui.low_banner, LV_OBJ_FLAG_HIDDEN);
 }
 
-static void refresh_driver(const dash_snapshot_t *snap)
+static void refresh_left(const dash_snapshot_t *snap)
 {
     const dash_state_t *s = &snap->vehicle;
     const dash_settings_t *cfg = &snap->settings;
@@ -324,15 +302,6 @@ static void refresh_driver(const dash_snapshot_t *snap)
                        cfg->use_mph ? 12 : 8);
     ui_gauge_set_value(&ui.speed, dash_speed(s, cfg));
 
-    const char *tu = cfg->use_fahrenheit ? "°F" : "°C";
-    ui_gauge_set_range(&ui.inv_temp, 0, dash_temp_max(cfg), tu, 0);
-    ui_gauge_set_range(&ui.motor_temp, 0, dash_temp_max(cfg), tu, 0);
-    ui_gauge_set_value(&ui.voltage, s->voltage_v);
-    ui_gauge_set_value(&ui.current, s->current_a);
-    ui_gauge_set_value(&ui.aux12v, s->aux_12v);   // NAN → "--" until CAN data arrives
-    ui_gauge_set_value(&ui.inv_temp, dash_temp(s->inv_temp_c, cfg));
-    ui_gauge_set_value(&ui.motor_temp, dash_temp(s->motor_temp_c, cfg));
-
     // Drive direction: -1 R, 0 N, 1 F
     int active = s->drive_dir < 0 ? 0 : (s->drive_dir > 0 ? 2 : 1);
     for (int i = 0; i < 3; i++) {
@@ -341,28 +310,17 @@ static void refresh_driver(const dash_snapshot_t *snap)
         set_font(ui.dir_lbl[i], on ? &lv_font_montserrat_48 : &lv_font_montserrat_28);
     }
 
-    // Op mode
-    static const struct { const char *icon; uint32_t color; } mode_style[] = {
-        [OPMODE_OFF]            = { LV_SYMBOL_POWER,   UI_COLOR_RED },
-        [OPMODE_RUN]            = { LV_SYMBOL_CHARGE,  UI_COLOR_SOC_OK },
-        [OPMODE_PRECHARGE]      = { LV_SYMBOL_REFRESH, UI_COLOR_PLUG },
-        [OPMODE_PRECHARGE_FAIL] = { LV_SYMBOL_WARNING, UI_COLOR_RED },
-        [OPMODE_CHARGING]       = { LV_SYMBOL_BATTERY_3, UI_COLOR_PLUG },
-    };
-    uint8_t m = s->opmode <= OPMODE_CHARGING ? s->opmode : OPMODE_OFF;
-    set_text(ui.mode_icon, mode_style[m].icon);
-    set_text_color(ui.mode_icon, mode_style[m].color, 0);
-    set_text(ui.mode_lbl, dash_opmode_text(s->opmode));
-    snprintf(buf, sizeof(buf), "Plug: %s\nOBC: %s", s->plug_inserted ? "Inserted" : "Not inserted",
-             dash_obc_text(s->obc_volt_stat));
-    set_text(ui.plug_lbl, buf);
+    // Time to full replaces R N F while charging.
+    int eta = dash_charge_eta_min(s);
+    if (eta >= 0) {
+        snprintf(buf, sizeof(buf), LV_SYMBOL_CHARGE " ~%dh %02dm to full", eta / 60, eta % 60);
+        set_text(ui.eta_lbl, buf);
+    }
+    set_hidden(ui.eta_lbl, eta < 0);
+    set_hidden(ui.dir_row, eta >= 0);
     set_text_color(ui.plug_icon, s->plug_inserted ? UI_COLOR_PLUG : UI_COLOR_INACTIVE, 0);
 
-    ui.fault = s->inverter_error;
-    set_hidden(ui.fault_lbl, !ui.fault);
-    if (!ui.fault) {
-        set_opa(ui.fault_lbl, LV_OPA_COVER);  // don't reappear mid-blink at 20 %
-    }
+    refresh_fault(s);
 
     // State of charge, range, low-battery warning
     float soc = s->soc_pct;
@@ -399,19 +357,107 @@ static void refresh_driver(const dash_snapshot_t *snap)
     }
     set_text(ui.range_lbl, buf);
 
-    int eta = dash_charge_eta_min(s);
-    if (eta >= 0) {
-        snprintf(buf, sizeof(buf), LV_SYMBOL_CHARGE " ~%dh %02dm to full", eta / 60, eta % 60);
-        set_text(ui.eta_lbl, buf);
-        set_hidden(ui.eta_lbl, false);
-    } else {
-        set_hidden(ui.eta_lbl, true);
-    }
-
     // Odometer
     fmt_thousands(buf, sizeof(buf), (long)floor(dash_odo_display(snap->odo_m, cfg)));
     set_text(ui.odo_lbl, buf);
     set_text(ui.odo_unit_lbl, cfg->use_odo_miles ? "mi" : "km");
+}
+
+// ── right screen: electrical and thermal systems ───────────────────────────
+//
+// Current (the gauge that moves most) large in the middle, the four slower
+// gauges on the diagonals around it, status text top and bottom.
+
+#define R_CUR_R   140
+#define R_SMALL_R 95
+#define R_DIAG    182   // x/y offset of the small gauges from the centre
+
+static void build_right(lv_obj_t *t)
+{
+    // Inverted: +150 A regen at the start, -250 A throttle at the end, so
+    // throttle swings the needle clockwise. Green = regen, red = 200-250 A.
+    const ui_gauge_cfg_t current = {
+        .name = "Current", .unit = "A", .min = 150, .max = -250, .radius = R_CUR_R,
+        .large = true, .major_ticks = 8,
+        .zones = { { 0.0f, 0.375f, UI_COLOR_GREEN_ZONE }, { 0.875f, 1.0f, UI_COLOR_RED } },
+        .zone_count = 2,
+    };
+    const ui_gauge_cfg_t voltage = { .name = "Voltage", .unit = "V", .min = 0, .max = 450, .radius = R_SMALL_R };
+    const ui_gauge_cfg_t aux = {
+        .name = "12V Batt", .unit = "V", .min = 10, .max = 16, .radius = R_SMALL_R, .decimals = 1,
+        .zones = { { 0.0f, 0.25f, UI_COLOR_RED }, { 0.8333f, 1.0f, UI_COLOR_RED } },  // <11.5 V, >15 V
+        .zone_count = 2,
+    };
+    const ui_gauge_cfg_t inv = {
+        .name = "Inverter", .unit = "°C", .min = 0, .max = 90, .radius = R_SMALL_R,
+        .zones = { { 0.8f, 1.0f, UI_COLOR_RED } }, .zone_count = 1,
+    };
+    ui_gauge_cfg_t motor = inv;
+    motor.name = "Motor";
+
+    ui_gauge_create(&ui.current, t, &current, 400, 400);
+    ui_gauge_create(&ui.voltage, t, &voltage, 400 - R_DIAG, 400 - R_DIAG);
+    ui_gauge_create(&ui.aux12v, t, &aux, 400 + R_DIAG, 400 - R_DIAG);
+    ui_gauge_create(&ui.inv_temp, t, &inv, 400 - R_DIAG, 400 + R_DIAG);
+    ui_gauge_create(&ui.motor_temp, t, &motor, 400 + R_DIAG, 400 + R_DIAG);
+
+    // Op mode across the top.
+    lv_obj_t *mode_row = plain_obj(t);
+    lv_obj_set_size(mode_row, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_align(mode_row, LV_ALIGN_TOP_MID, 0, 54);
+    lv_obj_set_flex_flow(mode_row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_style_pad_column(mode_row, 10, 0);
+    ui.mode_icon = label(mode_row, &lv_font_montserrat_28, UI_COLOR_TEXT_DIM, LV_SYMBOL_POWER);
+    ui.mode_lbl = label(mode_row, &lv_font_montserrat_28, UI_COLOR_TEXT, "--");
+
+    // Plug / charger status and the fault warning across the bottom.
+    ui.plug_lbl = label(t, &lv_font_montserrat_20, UI_COLOR_TEXT_MUTED, "");
+    lv_obj_align(ui.plug_lbl, LV_ALIGN_TOP_MID, 0, 694);
+    ui.fault_lbl = make_fault_label(t, &lv_font_montserrat_24);
+    lv_obj_align(ui.fault_lbl, LV_ALIGN_TOP_MID, 0, 728);
+}
+
+static void refresh_right(const dash_snapshot_t *snap)
+{
+    const dash_state_t *s = &snap->vehicle;
+    const dash_settings_t *cfg = &snap->settings;
+    char buf[64];
+
+    const char *tu = cfg->use_fahrenheit ? "°F" : "°C";
+    ui_gauge_set_range(&ui.inv_temp, 0, dash_temp_max(cfg), tu, 0);
+    ui_gauge_set_range(&ui.motor_temp, 0, dash_temp_max(cfg), tu, 0);
+    ui_gauge_set_value(&ui.voltage, s->voltage_v);
+    ui_gauge_set_value(&ui.current, s->current_a);
+    ui_gauge_set_value(&ui.aux12v, s->aux_12v);   // NAN → "--" until CAN data arrives
+    ui_gauge_set_value(&ui.inv_temp, dash_temp(s->inv_temp_c, cfg));
+    ui_gauge_set_value(&ui.motor_temp, dash_temp(s->motor_temp_c, cfg));
+
+    static const struct { const char *icon; uint32_t color; } mode_style[] = {
+        [OPMODE_OFF]            = { LV_SYMBOL_POWER,   UI_COLOR_RED },
+        [OPMODE_RUN]            = { LV_SYMBOL_CHARGE,  UI_COLOR_SOC_OK },
+        [OPMODE_PRECHARGE]      = { LV_SYMBOL_REFRESH, UI_COLOR_PLUG },
+        [OPMODE_PRECHARGE_FAIL] = { LV_SYMBOL_WARNING, UI_COLOR_RED },
+        [OPMODE_CHARGING]       = { LV_SYMBOL_BATTERY_3, UI_COLOR_PLUG },
+    };
+    uint8_t m = s->opmode <= OPMODE_CHARGING ? s->opmode : OPMODE_OFF;
+    set_text(ui.mode_icon, mode_style[m].icon);
+    set_text_color(ui.mode_icon, mode_style[m].color, 0);
+    set_text(ui.mode_lbl, dash_opmode_text(s->opmode));
+
+    snprintf(buf, sizeof(buf), "Plug: %s  " LV_SYMBOL_BULLET "  OBC: %s",
+             s->plug_inserted ? "Inserted" : "Not inserted", dash_obc_text(s->obc_volt_stat));
+    set_text(ui.plug_lbl, buf);
+
+    refresh_fault(s);
+}
+
+static void refresh_driver(const dash_snapshot_t *snap)
+{
+    if (ui.side == DASH_SIDE_LEFT) {
+        refresh_left(snap);
+    } else {
+        refresh_right(snap);
+    }
 }
 
 // ── service page ───────────────────────────────────────────────────────────
@@ -435,7 +481,7 @@ static void on_unit_changed(lv_event_t *e)
 static lv_obj_t *toggle_row(lv_obj_t *col, const char *name, const char *const *map)
 {
     lv_obj_t *row = plain_obj(col);
-    lv_obj_set_size(row, LV_PCT(100), 56);
+    lv_obj_set_size(row, LV_PCT(100), 50);
     label(row, &lv_font_montserrat_20, UI_COLOR_TEXT, name);
     lv_obj_align(lv_obj_get_child(row, 0), LV_ALIGN_LEFT_MID, 0, 0);
 
@@ -443,7 +489,7 @@ static lv_obj_t *toggle_row(lv_obj_t *col, const char *name, const char *const *
     lv_buttonmatrix_set_map(bm, map);
     lv_buttonmatrix_set_button_ctrl_all(bm, LV_BUTTONMATRIX_CTRL_CHECKABLE);
     lv_buttonmatrix_set_one_checked(bm, true);
-    lv_obj_set_size(bm, 240, 52);
+    lv_obj_set_size(bm, 240, 48);
     lv_obj_align(bm, LV_ALIGN_RIGHT_MID, 0, 0);
     lv_obj_set_style_pad_all(bm, 4, 0);
     lv_obj_set_style_pad_gap(bm, 6, 0);
@@ -463,7 +509,7 @@ static lv_obj_t *toggle_row(lv_obj_t *col, const char *name, const char *const *
 static lv_obj_t *data_row(lv_obj_t *col, const char *name)
 {
     lv_obj_t *row = plain_obj(col);
-    lv_obj_set_size(row, LV_PCT(100), 30);
+    lv_obj_set_size(row, LV_PCT(100), 27);
     lv_obj_set_style_border_side(row, LV_BORDER_SIDE_BOTTOM, 0);
     lv_obj_set_style_border_width(row, 1, 0);
     lv_obj_set_style_border_color(row, lv_color_hex(0x222222), 0);
@@ -478,34 +524,35 @@ static void build_service(lv_obj_t *t)
 {
     nav_button(t, LV_SYMBOL_LEFT, LV_ALIGN_LEFT_MID, 0, 0);  // ← driver page
 
-    // Content column kept inside the round glass; scrolls if it doesn't fit.
+    // Content column kept inside the round glass (sized so everything fits
+    // without scrolling; it still scrolls if rows are ever added).
     lv_obj_t *col = plain_obj(t);
-    lv_obj_set_size(col, 540, 660);
-    lv_obj_align(col, LV_ALIGN_CENTER, 0, 10);
+    lv_obj_set_size(col, 520, 600);
+    lv_obj_align(col, LV_ALIGN_TOP_MID, 0, 62);
     lv_obj_add_flag(col, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scroll_dir(col, LV_DIR_VER);
     lv_obj_set_scrollbar_mode(col, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_flex_flow(col, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_style_pad_row(col, 2, 0);
-    lv_obj_set_style_pad_bottom(col, 120, 0);
 
-    lv_obj_t *title = label(col, &lv_font_montserrat_24, UI_COLOR_TEXT, "Service / Diagnostics");
+    lv_obj_t *title = label(col, &lv_font_montserrat_24, UI_COLOR_TEXT,
+                            ui.side == DASH_SIDE_LEFT ? "Service " LV_SYMBOL_BULLET " Left screen"
+                                                      : "Service " LV_SYMBOL_BULLET " Right screen");
     lv_obj_set_width(title, LV_PCT(100));
     lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_pad_bottom(title, 10, 0);
+    lv_obj_set_style_pad_bottom(title, 6, 0);
 
     ui.btn_speed = toggle_row(col, "Speed", map_speed);
     ui.btn_temp = toggle_row(col, "Temperature", map_temp);
     ui.btn_odo = toggle_row(col, "Odometer", map_odo);
 
     lv_obj_t *gap = plain_obj(col);
-    lv_obj_set_size(gap, 10, 10);
+    lv_obj_set_size(gap, 10, 6);
 
     ui.v_odo = data_row(col, "Odometer");
     ui.v_voltage = data_row(col, "DC bus voltage");
     ui.v_current = data_row(col, "Battery current");
     ui.v_aux = data_row(col, "12V battery");
-    ui.v_raw31a = data_row(col, "ZombieVerter 0x31A raw");
     ui.v_inv = data_row(col, "Inverter temp");
     ui.v_motor = data_row(col, "Motor temp");
     ui.v_soc = data_row(col, "State of charge");
@@ -515,8 +562,7 @@ static void build_service(lv_obj_t *t)
     ui.v_obc = data_row(col, "OBC status");
     ui.v_err = data_row(col, "Inverter error");
     ui.v_can = data_row(col, "CAN bus");
-    ui.v_frames = data_row(col, "Frames rx / decoded");
-    ui.v_last = data_row(col, "Last frame");
+    ui.v_frames = data_row(col, "CAN frames");
 }
 
 static void sync_toggle(lv_obj_t *bm, bool second)
@@ -549,15 +595,6 @@ static void refresh_service(const dash_snapshot_t *snap)
     fmt_value(buf, sizeof(buf), s->aux_12v, 1, "V");
     set_text(ui.v_aux, buf);
 
-    if (s->raw_31a_dlc > 0) {
-        const uint8_t *r = s->raw_31a;
-        snprintf(buf, sizeof(buf), "%02X %02X %02X %02X %02X %02X %02X %02X",
-                 r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7]);
-    } else {
-        snprintf(buf, sizeof(buf), "no 0x31A frames received");
-    }
-    set_text(ui.v_raw31a, buf);
-
     fmt_temp(buf, sizeof(buf), s->inv_temp_c, cfg);
     set_text(ui.v_inv, buf);
     fmt_temp(buf, sizeof(buf), s->motor_temp_c, cfg);
@@ -571,14 +608,13 @@ static void refresh_service(const dash_snapshot_t *snap)
     set_text(ui.v_err, s->inverter_error ? "FAULT" : "OK");
     set_text_color(ui.v_err, s->inverter_error ? UI_COLOR_RED : UI_COLOR_TEXT, 0);
     set_text(ui.v_can, dash_can_state_text(snap->can_state));
-    snprintf(buf, sizeof(buf), "%lu / %lu", (unsigned long)s->frames_rx, (unsigned long)s->frames_decoded);
-    set_text(ui.v_frames, buf);
     if (s->last_rx_ms == 0) {
-        snprintf(buf, sizeof(buf), "never");
+        snprintf(buf, sizeof(buf), "none received");
     } else {
-        snprintf(buf, sizeof(buf), "%lu ms ago", (unsigned long)(snap->now_ms - s->last_rx_ms));
+        snprintf(buf, sizeof(buf), "%lu rx, last %lu ms ago", (unsigned long)s->frames_rx,
+                 (unsigned long)(snap->now_ms - s->last_rx_ms));
     }
-    set_text(ui.v_last, buf);
+    set_text(ui.v_frames, buf);
 }
 
 // ── timers ─────────────────────────────────────────────────────────────────
@@ -621,9 +657,10 @@ static void on_tile_changed(lv_event_t *e)
     refresh_service(&snap);
 }
 
-void dash_ui_create(lv_obj_t *screen)
+void dash_ui_create(lv_obj_t *screen, dash_side_t side)
 {
     memset(&ui, 0, sizeof(ui));
+    ui.side = side;
     lv_obj_set_style_bg_color(screen, lv_color_hex(UI_COLOR_BG), 0);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
     lv_obj_remove_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
@@ -636,7 +673,12 @@ void dash_ui_create(lv_obj_t *screen)
     ui.tile_service = lv_tileview_add_tile(ui.tileview, 1, 0, LV_DIR_LEFT);
     lv_obj_add_event_cb(ui.tileview, on_tile_changed, LV_EVENT_VALUE_CHANGED, NULL);
 
-    build_driver(ui.tile_driver);
+    if (side == DASH_SIDE_LEFT) {
+        build_left(ui.tile_driver);
+    } else {
+        build_right(ui.tile_driver);
+    }
+    nav_button(ui.tile_driver, LV_SYMBOL_RIGHT, LV_ALIGN_RIGHT_MID, 0, 1);  // → service page
     build_service(ui.tile_service);
 
     // Red anodized bezel ring around the round glass, on top of both pages.

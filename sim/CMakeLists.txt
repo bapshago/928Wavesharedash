@@ -38,7 +38,8 @@ add_executable(dash_sim
     ${MAIN_DIR}/core/leaf_can.c
     ${MAIN_DIR}/core/dash_calc.c
     ${MAIN_DIR}/ui/ui_gauge.c
-    ${MAIN_DIR}/ui/dash_ui.c)
+    ${MAIN_DIR}/ui/dash_ui.c
+    ${MAIN_DIR}/ui/fonts/font_speed_120.c)
 target_include_directories(dash_sim PRIVATE ${MAIN_DIR}/core ${MAIN_DIR}/ui)
 target_compile_options(dash_sim PRIVATE -Wall -Wextra -Wno-unused-parameter)
 target_link_libraries(dash_sim PRIVATE lvgl m)

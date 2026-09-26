@@ -1,5 +1,18 @@
 menu "928 EV Dash"
 
+    choice DASH_SIDE
+        prompt "Screen side"
+        default DASH_SIDE_LEFT
+        help
+            The car has two identical dash units running the same firmware.
+            This picks which gauges this unit shows on its driver page.
+
+        config DASH_SIDE_LEFT
+            bool "Left: speed, drive direction, odometer, state of charge"
+        config DASH_SIDE_RIGHT
+            bool "Right: current, voltage, 12V, temperatures, op mode, charger"
+    endchoice
+
     config DASH_CAN_TX_GPIO
         int "CAN transceiver TX GPIO (to transceiver D/TXD)"
         range 0 54

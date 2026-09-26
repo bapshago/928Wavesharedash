@@ -11,8 +11,13 @@
 #define SCALE_MAX  1000  // the scale runs 0..1000 (per-mille of the sweep)
 #define EASE       0.4f  // fraction of the remaining distance the needle moves per update
 
-static int32_t arc_width(const ui_gauge_t *g) { return g->large ? 8 : 5; }
-static int32_t zone_width(const ui_gauge_t *g) { return g->large ? 5 : 4; }
+// Stroke widths grow with the gauge so a full-screen dial doesn't look spindly.
+static int32_t arc_width(const ui_gauge_t *g)
+{
+    int32_t w = g->large ? g->radius / 22 : g->radius / 12;
+    return w < (g->large ? 8 : 5) ? (g->large ? 8 : 5) : w;
+}
+static int32_t zone_width(const ui_gauge_t *g) { return arc_width(g) * 2 / 3 < 4 ? 4 : arc_width(g) * 2 / 3; }
 static int32_t cont_size(const ui_gauge_t *g) { return 2 * (g->radius + zone_width(g) + 3); }
 
 static void relabel(ui_gauge_t *g)
@@ -106,33 +111,53 @@ void ui_gauge_create(ui_gauge_t *g, lv_obj_t *parent, const ui_gauge_cfg_t *cfg,
     lv_obj_set_style_arc_width(g->scale, 0, LV_PART_MAIN);
     lv_obj_set_style_line_color(g->scale, lv_color_hex(0xCCCCCC), LV_PART_INDICATOR);
     lv_obj_set_style_line_width(g->scale, 2, LV_PART_INDICATOR);
-    lv_obj_set_style_length(g->scale, g->large ? 16 : 9, LV_PART_INDICATOR);
+    // Tick lengths, fonts and text positions all scale with the radius
+    // (tuned at r = 175 for large gauges and r = 62 for small ones).
+    const int32_t r = g->radius;
+    const bool big = r >= 90;  // small gauges big enough for larger text
+    lv_obj_set_style_length(g->scale, g->large ? r * 9 / 100 : r * 15 / 100, LV_PART_INDICATOR);
     lv_obj_set_style_line_color(g->scale, lv_color_hex(0x999999), LV_PART_ITEMS);
     lv_obj_set_style_line_width(g->scale, 1, LV_PART_ITEMS);
-    lv_obj_set_style_length(g->scale, g->large ? 8 : 5, LV_PART_ITEMS);
+    lv_obj_set_style_length(g->scale, g->large ? r * 45 / 1000 : r * 8 / 100, LV_PART_ITEMS);
+    if (g->large && r >= 250) {
+        lv_obj_set_style_line_width(g->scale, 3, LV_PART_INDICATOR);
+        lv_obj_set_style_line_width(g->scale, 2, LV_PART_ITEMS);
+    }
+    const lv_font_t *label_font = cfg->label_font ? cfg->label_font
+                                  : (r >= 250 ? &lv_font_montserrat_28 : &lv_font_montserrat_20);
     lv_obj_set_style_text_color(g->scale, lv_color_hex(UI_COLOR_TEXT), LV_PART_INDICATOR);
-    lv_obj_set_style_text_font(g->scale, &lv_font_montserrat_20, LV_PART_INDICATOR);
-    lv_obj_set_style_pad_radial(g->scale, 8, LV_PART_INDICATOR);
+    lv_obj_set_style_text_font(g->scale, label_font, LV_PART_INDICATOR);
+    lv_obj_set_style_pad_radial(g->scale, r / 22, LV_PART_INDICATOR);
     relabel(g);
 
-    // Gauge name just below the pivot, then the value readout.
-    lv_obj_t *name = lv_label_create(g->cont);
-    lv_label_set_text(name, cfg->name);
-    lv_obj_set_style_text_color(name, lv_color_hex(UI_COLOR_TEXT_MUTED), 0);
-    lv_obj_set_style_text_font(name, g->large ? &lv_font_montserrat_20 : &lv_font_montserrat_14, 0);
-    lv_obj_align(name, LV_ALIGN_CENTER, 0, g->large ? 30 : 17);
+    // Gauge name just below the pivot, then the value readout (and the unit
+    // under it on large gauges).
+    if (cfg->name) {
+        lv_obj_t *name = lv_label_create(g->cont);
+        lv_label_set_text(name, cfg->name);
+        lv_obj_set_style_text_color(name, lv_color_hex(UI_COLOR_TEXT_MUTED), 0);
+        lv_obj_set_style_text_font(name, g->large || big ? &lv_font_montserrat_20 : &lv_font_montserrat_14, 0);
+        // Large gauges put the name above the pivot so the readout can sit higher,
+        // clear of the end-of-scale numbers at the bottom.
+        lv_obj_align(name, LV_ALIGN_CENTER, 0, g->large ? -r * 30 / 100 : r * 27 / 100);
+    }
 
+    const lv_font_t *value_font = cfg->value_font ? cfg->value_font
+                                  : (g->large ? &lv_font_montserrat_48
+                                              : (big ? &lv_font_montserrat_28 : &lv_font_montserrat_20));
+    const int32_t value_dy = g->large ? r * (r >= 250 ? 43 : 30) / 100 : r * 60 / 100;
     g->value_lbl = lv_label_create(g->cont);
     lv_obj_set_style_text_color(g->value_lbl, lv_color_hex(UI_COLOR_TEXT), 0);
-    lv_obj_set_style_text_font(g->value_lbl, g->large ? &lv_font_montserrat_48 : &lv_font_montserrat_20, 0);
-    lv_obj_align(g->value_lbl, LV_ALIGN_CENTER, 0, g->large ? 76 : 37);
+    lv_obj_set_style_text_font(g->value_lbl, value_font, 0);
+    lv_obj_align(g->value_lbl, LV_ALIGN_CENTER, 0, value_dy);
     lv_label_set_text(g->value_lbl, "--");
 
     if (g->large) {
         g->unit_lbl = lv_label_create(g->cont);
         lv_obj_set_style_text_color(g->unit_lbl, lv_color_hex(0x666666), 0);
-        lv_obj_set_style_text_font(g->unit_lbl, &lv_font_montserrat_20, 0);
-        lv_obj_align(g->unit_lbl, LV_ALIGN_CENTER, 0, 118);
+        lv_obj_set_style_text_font(g->unit_lbl, r >= 250 ? &lv_font_montserrat_28 : &lv_font_montserrat_20, 0);
+        lv_obj_align(g->unit_lbl, LV_ALIGN_CENTER, 0,
+                     value_dy + lv_font_get_line_height(value_font) / 2 + (r >= 250 ? 26 : 12));
         lv_label_set_text(g->unit_lbl, g->unit);
     }
 
@@ -145,12 +170,12 @@ void ui_gauge_create(ui_gauge_t *g, lv_obj_t *parent, const ui_gauge_cfg_t *cfg,
     lv_obj_set_pos(g->needle, 0, 0);
     lv_line_set_points(g->needle, g->pts, 2);
     lv_obj_set_style_line_color(g->needle, lv_color_hex(UI_COLOR_TEXT), 0);
-    lv_obj_set_style_line_width(g->needle, g->large ? 6 : 4, 0);
+    lv_obj_set_style_line_width(g->needle, g->large ? (r >= 250 ? 8 : 6) : (big ? 5 : 4), 0);
     lv_obj_set_style_line_rounded(g->needle, true, 0);
 
     lv_obj_t *hub = lv_obj_create(g->cont);
     lv_obj_remove_style_all(hub);
-    const int32_t hub_d = g->large ? 18 : 10;
+    const int32_t hub_d = g->large ? (r >= 250 ? 26 : 18) : (big ? 14 : 10);
     lv_obj_set_size(hub, hub_d, hub_d);
     lv_obj_center(hub);
     lv_obj_set_style_radius(hub, LV_RADIUS_CIRCLE, 0);

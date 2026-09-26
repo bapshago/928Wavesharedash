@@ -44,8 +44,6 @@ typedef struct {
     int8_t  drive_dir;       // -1 reverse, 0 neutral, 1 forward
     uint8_t opmode;          // dash_opmode_t
     float   aux_12v;         // NAN until known
-    uint8_t raw_31a[8];      // last raw 0x31A frame, for diagnostics
-    uint8_t raw_31a_dlc;     // 0 = no 0x31A frame received yet
 
     // Bookkeeping for the service screen.
     uint32_t frames_rx;      // total frames seen

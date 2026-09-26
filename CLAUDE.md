@@ -11,6 +11,10 @@ aligned with it unless a change is deliberate and noted in README "Differences".
   (CAN decoder), `dash_calc.c` (speed, range, ETA, odometer, test data), `dash_model.h`
   (interface the UI reads). Unit-tested in `host_test/`.
 - `main/ui/` — LVGL 9 only, reads data via `dash_model_snapshot()`; never touches drivers.
+  Two units, one firmware: `dash_ui_create(screen, side)` builds the LEFT (speed/RND/odo/SOC)
+  or RIGHT (current/voltage/12V/temps/status) driver page; side comes from Kconfig
+  `DASH_SIDE_LEFT/RIGHT`. Gauge text/ticks scale with radius (`ui_gauge.c`).
+- `main/ui/fonts/font_speed_120.c` — generated digits-only font (command in its header).
 - `main/dash_model.c` — ESP32 implementation of `dash_model.h` (TWAI, NVS, tasks).
 - `sim/sim_model.c` — desktop implementation of `dash_model.h`; `sim/` renders PNGs.
 
@@ -18,7 +22,7 @@ aligned with it unless a change is deliberate and noted in README "Differences".
 
 - `cmake -S host_test -B build-test && cmake --build build-test && ./build-test/test_core`
 - `cmake -S sim -B build-sim && cmake --build build-sim -j && ./build-sim/dash_sim --all /tmp/shots`
-  and look at the PNGs — layout must stay inside the 800 px circle.
+  and look at the PNGs (both `_left` and `_right`) — layout must stay inside the 800 px circle.
 - Firmware: `idf.py build` (ESP-IDF ≥ 5.5, target esp32p4; verified on 5.5 and 6.1).
 
 ## Gotchas

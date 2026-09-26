@@ -29,8 +29,15 @@ void app_main(void)
         return;
     }
 
+#if CONFIG_DASH_SIDE_RIGHT
+    const dash_side_t side = DASH_SIDE_RIGHT;
+#else
+    const dash_side_t side = DASH_SIDE_LEFT;
+#endif
+    ESP_LOGI(TAG, "screen side: %s", side == DASH_SIDE_LEFT ? "left" : "right");
+
     bsp_display_lock(-1);
-    dash_ui_create(lv_screen_active());
+    dash_ui_create(lv_screen_active(), side);
     bsp_display_unlock();
 
     bsp_display_brightness_set(CONFIG_DASH_BRIGHTNESS);

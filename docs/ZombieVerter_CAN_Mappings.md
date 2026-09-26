@@ -50,18 +50,11 @@ multiplier in `main/core/leaf_can.c` (0x31A case) must change to match.
 
 ## Verifying with the dashboard
 
-Swipe left on the dash to the **Service / Diagnostics** screen and check the
-**"ZombieVerter 0x31A raw"** row, which shows the live frame in hex:
+Open the **Service** page on either screen (tap the arrow on the right edge)
+and check the **Mode**, **Drive direction** and **12V battery** rows:
 
-```
-01 01 84 00 00 00 00 00
- |  |  |___|
- |  |  uaux = 0x0084 = 132 → 13.2 V
- |  opmode = 1 (Run)
- drivedir = 1 (Forward)
-```
-
-- Bytes 2–3 stuck at `00 00` → the `uaux` mapping is missing.
-- `no 0x31A frames received` → none of the mappings exist (or CAN is down).
-- Plausible hex but a wrong gauge reading → gain or byte order mismatch;
-  note the hex and adjust.
+- Mode and drive direction change with the car but 12V shows `--` → the
+  `uaux` mapping is missing.
+- Mode stuck at `Off` and drive direction at `Neutral` → none of the mappings
+  exist, or CAN is down (check the **CAN bus** and **CAN frames** rows).
+- A plausible but wrong 12V reading → gain or byte order mismatch.

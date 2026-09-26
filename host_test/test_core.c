@@ -114,7 +114,6 @@ static void test_31a_zombieverter(void)
     CHECK(s.drive_dir == 1);
     CHECK(s.opmode == OPMODE_RUN);
     CHECK_NEAR(s.aux_12v, 13.2, 1e-3);
-    CHECK(s.raw_31a_dlc == 8 && s.raw_31a[2] == 0x84);
 
     // Reverse, charging; uaux bytes zero = mapping missing → keep last value
     decode(&s, 0x31A, 0xFF, 0x04, 0x00, 0x00, 0, 0, 0, 0);

@@ -19,3 +19,7 @@
 #define UI_COLOR_WORDMARK    0xFF8A1E  // "Angry Pixie Garage" orange
 #define UI_COLOR_WARN_BG     0xD40000
 #define UI_COLOR_PLUG        0xFFD700
+
+// Custom fonts (main/ui/fonts/)
+#include "lvgl.h"
+LV_FONT_DECLARE(font_speed_120)

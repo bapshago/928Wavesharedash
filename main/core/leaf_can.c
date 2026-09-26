@@ -83,11 +83,6 @@ bool leaf_can_decode(uint32_t id, const uint8_t d[8], uint8_t dlc, dash_state_t 
         if (raw12 != 0) {
             s->aux_12v = raw12 * 0.1f;
         }
-
-        s->raw_31a_dlc = dlc;
-        for (int i = 0; i < 8; i++) {
-            s->raw_31a[i] = (i < dlc) ? d[i] : 0;
-        }
         return true;
     }
 

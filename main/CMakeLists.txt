@@ -6,6 +6,7 @@ idf_component_register(
         "core/dash_calc.c"
         "ui/ui_gauge.c"
         "ui/dash_ui.c"
+        "ui/fonts/font_speed_120.c"
     INCLUDE_DIRS "." "core" "ui"
     REQUIRES esp_driver_twai esp_timer nvs_flash)
 

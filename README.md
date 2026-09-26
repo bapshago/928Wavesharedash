@@ -8,13 +8,20 @@ This is a port of the [Angry Pixie web dash](https://github.com/bapshago/AngryPi
 the same, but instead of an ESP32 serving a web page to a tablet, the data is
 drawn straight onto the round screen with LVGL.
 
-| Driving | Charging | Service / Diagnostics |
-|---|---|---|
-| ![Driving](docs/screenshots/drive.png) | ![Charging](docs/screenshots/charging.png) | ![Service](docs/screenshots/service.png) |
+The car has **two identical units**, one each side of the dash, running the same
+firmware. A menuconfig setting picks which one a unit is:
 
-| Critically low battery | Inverter fault, reverse | Metric units |
+| | Left screen | Right screen |
 |---|---|---|
-| ![Low battery](docs/screenshots/lowbatt.png) | ![Fault](docs/screenshots/fault.png) | ![Metric](docs/screenshots/metric.png) |
+| Driving | ![Left](docs/screenshots/drive_left.png) | ![Right](docs/screenshots/drive_right.png) |
+| Charging / fault | ![Charging](docs/screenshots/charging_left.png) | ![Fault](docs/screenshots/fault_right.png) |
+| Critically low battery / service page | ![Low battery](docs/screenshots/lowbatt_left.png) | ![Service](docs/screenshots/service_right.png) |
+
+- **Left:** full-screen speed gauge, R / N / F (replaced by time-to-full while
+  charging), state-of-charge bar with range, odometer, low-battery warning.
+- **Right:** current gauge in the middle; pack voltage, 12V, inverter and motor
+  temperature around it; op mode at the top; plug and charger status at the bottom.
+- **Both:** the flashing inverter-fault warning and the service page.
 
 *Screenshots are rendered by the desktop simulator (`sim/`) from the same UI code
 the board runs; the grey corners are outside the round glass.*
@@ -35,7 +42,7 @@ Carried over from the web dash:
 - Plug and on-board charger status; flashing inverter fault warning
 - Odometer (miles or km), seeded to 150,000 miles on first boot and integrated from motor speed
 - Service / Diagnostics screen (tap the arrow on the right edge, or swipe left) with speed, temperature and odometer unit
-  toggles and raw readings, including the ZombieVerter 0x31A frame in hex
+  toggles and all raw readings. Unit settings are stored per unit, so set them on both screens
 - Unit settings and the odometer persist in flash (NVS); the odometer is written at
   most every 30 s to limit flash wear
 - Red bezel ring to match the car's anodized gauge bezels
@@ -97,6 +104,7 @@ Options under `idf.py menuconfig` → **928 EV Dash**:
 
 | Option | Default | |
 |---|---|---|
+| Screen side | Left | **Left** or **Right**, see above. Set this differently on the two units |
 | CAN TX / RX GPIO | 5 / 4 | Transceiver pins |
 | CAN bitrate | 500000 | |
 | Listen-only | off | On = the dash never ACKs or transmits. Leave off on a bench with only one transmitter |
@@ -120,8 +128,8 @@ It needs a C compiler and CMake:
 
 ```sh
 cmake -S sim -B build-sim && cmake --build build-sim -j
-./build-sim/dash_sim drive out.png          # one scenario
-./build-sim/dash_sim --all docs/screenshots  # all of them
+./build-sim/dash_sim drive left out.png     # one scenario on one screen
+./build-sim/dash_sim --all /tmp/shots        # every scenario, both screens
 ```
 
 Scenarios: `drive`, `regen`, `charging`, `lowbatt`, `fault`, `nodata`,
