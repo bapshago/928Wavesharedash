@@ -16,17 +16,20 @@ menu "928 EV Dash"
     config DASH_CAN_TX_GPIO
         int "CAN transceiver TX GPIO (to transceiver D/TXD)"
         range 0 54
-        default 5
+        default 35
         help
-            ESP32-P4 GPIO wired to the CAN transceiver's TXD input (SN65HVD230 pin D).
-            GPIO4 and GPIO5 are free on the board's 40-pin header.
+            ESP32-P4 GPIO wired to the CAN transceiver's TXD input (SN65HVD230 pin D,
+            "CTX" on the common breakout). GPIO35 is also the chip's BOOT strapping
+            pin: that's fine because the transceiver input doesn't pull it low at
+            reset, but holding the BOOT button drives the CAN bus dominant.
 
     config DASH_CAN_RX_GPIO
         int "CAN transceiver RX GPIO (from transceiver R/RXD)"
         range 0 54
-        default 4
+        default 36
         help
-            ESP32-P4 GPIO wired to the CAN transceiver's RXD output (SN65HVD230 pin R).
+            ESP32-P4 GPIO wired to the CAN transceiver's RXD output (SN65HVD230 pin R,
+            "CRX" on the common breakout).
 
     config DASH_CAN_BITRATE
         int "CAN bitrate (bit/s)"

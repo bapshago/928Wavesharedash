@@ -63,18 +63,19 @@ New on the round display:
 
 Wiring (defaults; change them in `idf.py menuconfig` → *928 EV Dash*):
 
-| 40-pin header | SN65HVD230 | |
+| 40-pin header | SN65HVD230 (breakout label) | |
 |---|---|---|
-| GPIO5 | D (TXD) | CAN TX |
-| GPIO4 | R (RXD) | CAN RX |
-| 3V3 | VCC | |
+| GPIO35 | D / TXD (CTX) | CAN TX |
+| GPIO36 | R / RXD (CRX) | CAN RX |
+| 3V3 | VCC (3V3) | |
 | GND | GND | |
 | | CANH / CANL | to the EV-CAN bus (ZombieVerter, Leaf inverter, PDM, BMS) |
 
-GPIO4 and GPIO5 are adjacent pins on the board's 40-pin header, and nothing else
-on the board uses them. Check the header silkscreen before wiring. The bus should
-already be terminated at both ends; only add a 120 Ω terminator if the dash is at
-one end of the bus.
+GPIO35 is also the ESP32-P4's BOOT strapping pin. That's harmless here (the
+transceiver input doesn't pull it low at power-up), but holding the board's BOOT
+button will drive the CAN bus dominant, so don't press it with the car on.
+The bus should already be terminated at both ends; remove the 120 Ω terminator on
+the transceiver breakout unless the dash is at one end of the bus.
 
 ## CAN messages read (500 kbit/s)
 
@@ -105,7 +106,7 @@ Options under `idf.py menuconfig` → **928 EV Dash**:
 | Option | Default | |
 |---|---|---|
 | Screen side | Left | **Left** or **Right**, see above. Set this differently on the two units |
-| CAN TX / RX GPIO | 5 / 4 | Transceiver pins |
+| CAN TX / RX GPIO | 35 / 36 | Transceiver pins |
 | CAN bitrate | 500000 | |
 | Listen-only | off | On = the dash never ACKs or transmits. Leave off on a bench with only one transmitter |
 | Test mode | off | No CAN needed: every gauge sweeps its full range up and back down over 20 s, SOC 100 → 0 %, and on/off states step through in turn. Test-mode distance is not added to the odometer |
