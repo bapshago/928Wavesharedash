@@ -66,7 +66,7 @@ Wiring (defaults; change them in `idf.py menuconfig` → *928 EV Dash*):
 | 40-pin header | SN65HVD230 (breakout label) | |
 |---|---|---|
 | GPIO35 | D / TXD (CTX) | CAN TX |
-| GPIO36 | R / RXD (CRX) | CAN RX |
+| GPIO34 | R / RXD (CRX) | CAN RX |
 | 3V3 | VCC (3V3) | |
 | GND | GND | |
 | | CANH / CANL | to the EV-CAN bus (ZombieVerter, Leaf inverter, PDM, BMS) |
@@ -106,7 +106,7 @@ Options under `idf.py menuconfig` → **928 EV Dash**:
 | Option | Default | |
 |---|---|---|
 | Screen side | Left | **Left** or **Right**, see above. Set this differently on the two units |
-| CAN TX / RX GPIO | 35 / 36 | Transceiver pins |
+| CAN TX / RX GPIO | 35 / 34 | Transceiver pins |
 | CAN bitrate | 500000 | |
 | Listen-only | off | On = the dash never ACKs or transmits. Leave off on a bench with only one transmitter |
 | Test mode | off | No CAN needed: every gauge sweeps its full range up and back down over 20 s, SOC 100 → 0 %, and on/off states step through in turn. Test-mode distance is not added to the odometer |

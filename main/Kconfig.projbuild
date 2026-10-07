@@ -26,7 +26,7 @@ menu "928 EV Dash"
     config DASH_CAN_RX_GPIO
         int "CAN transceiver RX GPIO (from transceiver R/RXD)"
         range 0 54
-        default 36
+        default 34
         help
             ESP32-P4 GPIO wired to the CAN transceiver's RXD output (SN65HVD230 pin R,
             "CRX" on the common breakout).
