@@ -103,7 +103,8 @@ the Waveshare screen. Before plugging it into the screen, set the output to
 - *The LM2596 buck converter sits on M2.5 standoffs to the right.*
 - *Zip ties through the bracket notches hold the wiring.*
 
-Full assembly steps will be added with the build guide.
+Step-by-step assembly, wiring and commissioning are in the
+[build guide](../../docs/BUILD.md).
 
 ## Build photos
 
