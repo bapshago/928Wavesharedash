@@ -9,6 +9,7 @@ millimetres.
 | `InstrumentCluster_RV1_1_cut4_SCS.dxf` | Screen bracket: joins a Waveshare screen to the back of cut3 (33 × 10 mm flat, two 4.5 mm holes) | 8 | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
 | `SCS_BuckConverterForDash_Plate_V1_1.dxf` | Buck converter mounting plate (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut |
 | `SCS_BuckConverterForDash_Plate2_V1_1.dxf` | Buck converter mounting plate 2 (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut |
+| *(no file: hand formed)* | Shroud: strip formed around cut3 to meet the pod face | 1 | 18 gauge cold rolled steel, 3" × 31" strip | Hand formed, welded to cut3 (below) |
 | `CanBusCableHolder.xcs` | CAN bus wire management (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut (xTool Creative Space project) |
 
 ## Ordering the steel parts from SendCutSend
@@ -40,6 +41,27 @@ Two 90° bends in opposite directions make a **5 mm jog** (a Z shape):
    way, so the two hole ends finish parallel and 5 mm apart.
 
 The holes sit almost exactly symmetric on the strip, so either end can be the start.
+
+## Shroud
+
+The shroud closes the gap between cut3 and the face of the 928 instrument pod.
+It isn't a cut file: it's hand formed from a **3" × 31" strip of 18 gauge cold
+rolled steel**, using the pod as the guide.
+
+1. **Position:** the shroud runs just inside the four inner M4 bolt holes on cut3
+   (the ones nearest the middle of the plate), and about 10 mm inside the four
+   outer holes (the ones nearest the ends).
+2. **Measure your pod:** bolt cut3 into the pod and measure from the edge of cut3
+   to the face of the pod at several points around it. On the first car the
+   shroud was **10 mm** at its smallest and **33 mm** at its largest, with the
+   trim cut at roughly **20°**. Other pods may differ, so measure yours rather
+   than copying these numbers.
+3. **Form and close:** hand form the strip to shape against the pod and trim it to
+   your measurements. Then weld the two ends of the strip together.
+4. **Tack weld** the shroud to cut3, refit it in the pod and confirm the fit.
+5. **Stitch weld** the shroud to cut3 once the fit is right.
+6. **Finish:** prep for paint, then epoxy primer and a **matte black** top coat.
+   Matte black keeps reflections off the screens.
 
 ## Assembly stack
 
@@ -96,8 +118,8 @@ washers and nuts) and the end tabs bent.
 
 ![Back of cut3 with brackets](photos/03_back_brackets_and_tabs.jpg)
 
-**Steel shroud** added around the perimeter of cut3 to follow the pod opening:
-a strip formed around the plate edge and fastened along it.
+**Steel shroud** (see [Shroud](#shroud)), hand formed, ends welded, then tacked and
+stitch welded to cut3.
 
 ![Shroud from the front](photos/04_shroud_front.jpg)
 ![Shroud from the front, top view](photos/05_shroud_front_top.jpg)
@@ -105,7 +127,7 @@ a strip formed around the plate edge and fastened along it.
 ![Shroud fasteners along the edge](photos/07_shroud_edge_fasteners.jpg)
 ![End tab with the shroud](photos/08_shroud_end_tab.jpg)
 
-**Paint:** cut3 and the eight cut4 brackets, then the finished pod in grey.
+**Paint:** cut3 and the eight cut4 brackets, then the pod in grey epoxy primer. The final top coat is matte black.
 
 ![Parts being painted](photos/09_parts_painting.jpg)
 ![Finished painted pod](photos/10_pod_painted.jpg)
