@@ -77,6 +77,12 @@ button will drive the CAN bus dominant, so don't press it with the car on.
 The bus should already be terminated at both ends; remove the 120 Ω terminator on
 the transceiver breakout unless the dash is at one end of the bus.
 
+The mechanical build is in [`hardware/mechanical/`](hardware/mechanical/README.md):
+- cut files for the main instrument faceplate, the Waveshare mounting brackets,
+  the buck converter bracket and the CAN bus wire bracket
+- bend instructions, the hand-formed shroud, the assembly stack and hardware
+- build photos
+
 ## CAN messages read (500 kbit/s)
 
 | ID | Data |
@@ -156,6 +162,7 @@ main/
 sim/                desktop renderer (LVGL on the PC → PNG)
 host_test/          unit tests for main/core
 docs/               screenshots, ZombieVerter CAN mapping guide
+hardware/mechanical/ cut files (DXF), bend diagrams, assembly notes, build photos
 ```
 
 ## Differences from the web dash
