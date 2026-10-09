@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 450" width="360" height="450" font-family="sans-serif" font-size="14">
+<rect width="360" height="450" fill="#fff"/>
+<polygon points="286.9,330.0 286.9,330.0 250.8,330.0 250.8,330.0 250.8,330.0 250.8,82.0 250.8,82.0 250.8,82.0 286.1,82.0 286.1,82.0 295.3,82.0 302.8,74.5 302.8,65.3 302.8,65.3 302.8,50.0 302.8,50.0 302.8,39.0 293.8,30.0 282.8,30.0 282.8,30.0 54.1,30.0 54.1,30.0 43.1,30.0 34.1,39.0 34.1,50.0 34.1,50.0 34.1,362.0 34.1,362.0 34.1,373.0 43.1,382.0 54.1,382.0 54.1,382.0 282.8,382.0 282.8,382.0 293.8,382.0 302.8,373.0 302.8,362.0 302.8,362.0 302.8,345.9 302.8,345.9 302.8,337.1 295.7,330.0 286.9,330.0" fill="#e8ecf0" stroke="#222" stroke-width="2"/>
+<circle cx="71.0" cy="291.0" r="6.0" fill="none" stroke="#222" stroke-width="2"/>
+<circle cx="189.1" cy="291.0" r="6.0" fill="none" stroke="#222" stroke-width="2"/>
+<circle cx="189.1" cy="64.7" r="6.0" fill="none" stroke="#222" stroke-width="2"/>
+<circle cx="71.0" cy="64.7" r="6.0" fill="none" stroke="#222" stroke-width="2"/>
+<circle cx="276.8" cy="56.0" r="9.0" fill="none" stroke="#222" stroke-width="2"/>
+<circle cx="276.8" cy="356.0" r="9.0" fill="none" stroke="#222" stroke-width="2"/>
+<rect x="112.0" y="314.0" width="12.0" height="24.0" rx="6" fill="none" stroke="#222" stroke-width="2"/>
+<rect x="136.8" y="314.0" width="12.0" height="24.0" rx="6" fill="none" stroke="#222" stroke-width="2"/>
+<line x1="222.8" y1="16" x2="222.8" y2="396" stroke="#d00" stroke-width="2.5" stroke-dasharray="10,6"/>
+<text x="216.8" y="10" fill="#d00" text-anchor="end">bend 90°</text>
+<line x1="222.8" y1="414" x2="302.79999999999995" y2="414" stroke="#222" stroke-width="1.5"/>
+<line x1="222.8" y1="406" x2="222.8" y2="422" stroke="#222" stroke-width="1.5"/>
+<line x1="302.79999999999995" y1="386.0" x2="302.79999999999995" y2="422" stroke="#222" stroke-width="1.5"/>
+<text x="262.79999999999995" y="436" text-anchor="middle">20 mm</text>
+</svg>
