@@ -3,14 +3,13 @@
 Cut files for the dash pod and electronics brackets. The DXF drawings are in
 millimetres.
 
-| File | Part | Material | How it's made |
-|---|---|---|---|
-| `InstrumentCluster_RV1_1_cut3_SCS.dxf` | Instrument cluster plate: two 90 mm gauge openings, mounting tab each end (416 × 120 mm flat) | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
-| `InstrumentCluster_RV1_1_cut4_SCS.dxf` | Screen bracket: joins a Waveshare screen to the back of cut3 (33 × 10 mm flat, two 4.5 mm holes) | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
-| `SCS_BuckConverterForDash_Plate_V1_1.dxf` | Buck converter mounting plate (attaches to the screen; flat, no bends) | 1/16" ABS | Laser cut |
-| `SCS_BuckConverterForDash_Plate2_V1_1.dxf` | Buck converter mounting plate 2 (attaches to the screen; flat, no bends) | 1/16" ABS | Laser cut |
-| `CanBusCableHolder.xcs` | CAN bus wire management (attaches to the screen; flat, no bends) | 1/16" ABS | Laser cut (xTool Creative Space project) |
-| `InstrumentClusterBracket1_v1_1.dxf` | Unconfirmed: same outline as the buck converter plate with different small holes | — | — |
+| File | Part | Qty (both units) | Material | How it's made |
+|---|---|---|---|---|
+| `InstrumentCluster_RV1_1_cut3_SCS.dxf` | Instrument cluster plate: two 90 mm gauge openings, mounting tab each end (416 × 120 mm flat) | 1 | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
+| `InstrumentCluster_RV1_1_cut4_SCS.dxf` | Screen bracket: joins a Waveshare screen to the back of cut3 (33 × 10 mm flat, two 4.5 mm holes) | 8 | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
+| `SCS_BuckConverterForDash_Plate_V1_1.dxf` | Buck converter mounting plate (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut |
+| `SCS_BuckConverterForDash_Plate2_V1_1.dxf` | Buck converter mounting plate 2 (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut |
+| `CanBusCableHolder.xcs` | CAN bus wire management (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut (xTool Creative Space project) |
 
 ## Ordering the steel parts from SendCutSend
 
@@ -42,11 +41,32 @@ Two 90° bends in opposite directions make a **5 mm jog** (a Z shape):
 
 The holes sit almost exactly symmetric on the strip, so either end can be the start.
 
+## Assembly stack
+
+The pair needs 2 buck converter brackets and 2 CAN bus wire brackets in ABS,
+one of each per unit. Each unit stacks from the front of the car backwards:
+
+1. **cut3**, the instrument cluster plate. One plate carries both screens, one
+   per gauge opening.
+2. **Waveshare screen**, face forward through the opening.
+3. **ABS brackets** (buck converter bracket and CAN bus wire bracket) against
+   the back of the screen.
+4. **Four cut4 screen brackets** over the ABS brackets. One end of each bracket
+   screws into the screen through the ABS brackets. The 5 mm jog brings the other
+   end forward onto cut3, where it bolts on.
+
+## Power
+
+The buck converter's 5 V output has a USB-C cable soldered on, which plugs into
+the Waveshare screen. Before plugging it into the screen, set the output to
+**5 V** and **check the polarity** at the USB-C end.
+
 ## Assembly hardware
 
 | Joint | Hardware |
 |---|---|
-| Screen bracket (cut4) to Waveshare screen and to the back of cut3 | M4 × 5 mm screws |
+| Screen bracket (cut4) to the Waveshare screen, clamping the ABS brackets | M4 × 5 mm screws |
+| Screen bracket (cut4) to the back of cut3 | M4 bolts, flat washers, lock washers and nuts |
 | Buck converter to its ABS mounting plate | M2.5 × 5 mm standoffs, screws and nuts |
 | Wires to the brackets | Small zip ties through the notches in the brackets |
 
