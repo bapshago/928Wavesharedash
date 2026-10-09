@@ -70,7 +70,7 @@ the Waveshare screen. Before plugging it into the screen, set the output to
 | Buck converter to its ABS mounting plate | M2.5 × 5 mm standoffs, screws and nuts |
 | Wires to the brackets | Small zip ties through the notches in the brackets |
 
-![Back of the instrument cluster plate with one unit assembled](photos/back_assembly.jpg)
+![Back of the instrument cluster plate with one unit assembled](photos/11_back_electronics_fitted.jpg)
 
 *Back of cut3 with one unit fitted:*
 - *The Waveshare screen sits over a gauge opening, held by four cut4 brackets (two M4 screws each).*
@@ -79,3 +79,33 @@ the Waveshare screen. Before plugging it into the screen, set the output to
 - *Zip ties through the bracket notches hold the wiring.*
 
 Full assembly steps will be added with the build guide.
+
+## Build photos
+
+In build order. All photos are in `photos/`.
+
+**Test fit of the flat cut3 plate in the original 928 instrument pod**, with
+one screen mounted on its four cut4 brackets. The second opening shows the
+bracket holes before its brackets go on.
+
+![Test fit in the pod](photos/01_test_fit_in_pod.jpg)
+![Test fit in the pod, side angle](photos/02_test_fit_in_pod_angle.jpg)
+
+**Back of cut3** with the cut4 brackets bolted on (M4 bolts, washers, lock
+washers and nuts) and the end tabs bent.
+
+![Back of cut3 with brackets](photos/03_back_brackets_and_tabs.jpg)
+
+**Steel shroud** added around the perimeter of cut3 to follow the pod opening:
+a strip formed around the plate edge and fastened along it.
+
+![Shroud from the front](photos/04_shroud_front.jpg)
+![Shroud from the front, top view](photos/05_shroud_front_top.jpg)
+![Shroud fasteners along the side](photos/06_shroud_side_fasteners.jpg)
+![Shroud fasteners along the edge](photos/07_shroud_edge_fasteners.jpg)
+![End tab with the shroud](photos/08_shroud_end_tab.jpg)
+
+**Paint:** cut3 and the eight cut4 brackets, then the finished pod in grey.
+
+![Parts being painted](photos/09_parts_painting.jpg)
+![Finished painted pod](photos/10_pod_painted.jpg)
