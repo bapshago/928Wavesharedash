@@ -7,10 +7,9 @@ millimetres.
 |---|---|---|---|---|
 | `InstrumentCluster_RV1_1_cut3_SCS.dxf` | Instrument cluster plate: two 90 mm gauge openings, mounting tab each end (416 × 120 mm flat) | 1 | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
 | `InstrumentCluster_RV1_1_cut4_SCS.dxf` | Screen bracket: joins a Waveshare screen to the back of cut3 (33 × 10 mm flat, two 4.5 mm holes) | 8 | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
-| `SCS_BuckConverterForDash_Plate_V1_1.dxf` | Buck converter mounting plate (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut |
-| `SCS_BuckConverterForDash_Plate2_V1_1.dxf` | Buck converter mounting plate 2 (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut |
+| `SCS_BuckConverterForDash_Plate_V1_1.dxf` | Buck converter bracket: carries the buck converter on M2.5 standoffs (attaches to the screen; flat, no bends) | 2 | 1/16" ABS | Laser cut |
+| `SCS_BuckConverterForDash_Plate2_V1_1.dxf` | CAN bus wire bracket: 24.8 × 88 mm with zip-tie slots for the CAN wiring (attaches to the screen; flat, no bends) | 2 | 1/16" ABS | Laser cut |
 | *(no file: hand formed)* | Shroud: strip formed around cut3 to meet the pod face | 1 | 18 gauge cold rolled steel, 3" × 31" strip | Hand formed, welded to cut3 (below) |
-| `CanBusCableHolder.xcs` | CAN bus wire management (attaches to the screen; flat, no bends) | see below | 1/16" ABS | Laser cut (xTool Creative Space project) |
 
 ## Ordering the steel parts from SendCutSend
 
@@ -69,8 +68,7 @@ rolled steel**, using the pod as the guide.
 
 ## Assembly stack
 
-The pair needs 2 buck converter brackets and 2 CAN bus wire brackets in ABS,
-one of each per unit. Each unit stacks from the front of the car backwards:
+Each unit stacks from the front of the car backwards:
 
 1. **cut3**, the instrument cluster plate. One plate carries both screens, one
    per gauge opening.
