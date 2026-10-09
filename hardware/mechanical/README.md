@@ -49,18 +49,22 @@ It isn't a cut file: it's hand formed from a **3" × 31" strip of 18 gauge cold
 rolled steel**, using the pod as the guide.
 
 1. **Position:** the shroud runs just inside the four inner M4 bolt holes on cut3
-   (the ones nearest the middle of the plate), and about 10 mm inside the four
-   outer holes (the ones nearest the ends).
+   (185 mm and 230 mm from the left end), and about 10 mm inside the four outer
+   holes (110 mm and 305 mm from the left end).
 2. **Measure your pod:** bolt cut3 into the pod and measure from the edge of cut3
    to the face of the pod at several points around it. On the first car the
    shroud was **10 mm** at its smallest and **33 mm** at its largest, with the
    trim cut at roughly **20°**. Other pods may differ, so measure yours rather
    than copying these numbers.
-3. **Form and close:** hand form the strip to shape against the pod and trim it to
+3. **Make a template first (recommended):** cut a 3" × 31" strip of posterboard,
+   form it around cut3 inside the pod and trim it until it meets the pod face all
+   the way round. Then trace it onto the steel strip and cut. This gets an exact
+   fit before any metal is cut.
+4. **Form and close:** hand form the strip to shape against the pod and trim it to
    your measurements. Then weld the two ends of the strip together.
-4. **Tack weld** the shroud to cut3, refit it in the pod and confirm the fit.
-5. **Stitch weld** the shroud to cut3 once the fit is right.
-6. **Finish:** prep for paint, then epoxy primer and a **matte black** top coat.
+5. **Tack weld** the shroud to cut3, refit it in the pod and confirm the fit.
+6. **Stitch weld** the shroud to cut3 once the fit is right.
+7. **Finish:** prep for paint, then epoxy primer and a **matte black** top coat.
    Matte black keeps reflections off the screens.
 
 ## Assembly stack
