@@ -194,9 +194,11 @@ Mount the faceplate in the 928 instrument pod with either:
 ## 7. Wiring into the car
 
 ```
-Terminal 15 (CE panel) ── 4 A fuse ──┬── Buck converter (left)  ── USB-C ── Left screen
-                                     └── Buck converter (right) ── USB-C ── Right screen
-Ground ──────────────────────────────┴── both buck converter IN−
+Terminal 15 (CE panel) ── 4 A fuse ──┬── Buck converter (left)  IN+ ── USB-C ── Left screen
+                                     └── Buck converter (right) IN+ ── USB-C ── Right screen
+
+Ground (CE panel) ───────────────────┬── Buck converter (left)  IN−
+                                     └── Buck converter (right) IN−
 
 EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
                              └── Right screen transceiver
@@ -207,10 +209,12 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 - Take 12 V from **terminal 15 on the Porsche CE (central electrical) panel**.
   That's the switched ignition feed, so the dash is on only with the ignition.
 - Fuse it with a **4 A fuse** before the buck converters.
-- One fused feed powers both buck converters.
+- **One** 4 A fuse covers both buck converters: a single fused feed splits to the
+  two converter inputs after the fuse.
 - The first car's power run is about 5 ft to the CE panel. Size yours to your car.
 
-> **Open item:** where the ground is taken from.
+> **Open item:** the ground is taken at the CE panel; the exact ground point
+> is to be confirmed.
 
 ### CAN bus
 
