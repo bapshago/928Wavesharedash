@@ -50,4 +50,12 @@ The holes sit almost exactly symmetric on the strip, so either end can be the st
 | Buck converter to its ABS mounting plate | M2.5 × 5 mm standoffs, screws and nuts |
 | Wires to the brackets | Small zip ties through the notches in the brackets |
 
-Photos and full assembly steps will be added with the build guide.
+![Back of the instrument cluster plate with one unit assembled](photos/back_assembly.jpg)
+
+*Back of cut3 with one unit fitted:*
+- *The Waveshare screen sits over a gauge opening, held by four cut4 brackets (two M4 screws each).*
+- *The SN65HVD230 CAN transceiver plugs onto the screen's GPIO header.*
+- *The LM2596 buck converter sits on M2.5 standoffs to the right.*
+- *Zip ties through the bracket notches hold the wiring.*
+
+Full assembly steps will be added with the build guide.
