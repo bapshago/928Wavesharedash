@@ -17,6 +17,9 @@ aligned with it unless a change is deliberate and noted in README "Differences".
 - `main/ui/fonts/font_speed_120.c` — generated digits-only font (command in its header).
 - `main/dash_model.c` — ESP32 implementation of `dash_model.h` (TWAI, NVS, tasks).
 - `sim/sim_model.c` — desktop implementation of `dash_model.h`; `sim/` renders PNGs.
+- `hardware/mechanical/` — DXF cut files, bend diagrams (SVG), build photos and the mechanical
+  README. File names and part names are referenced from that README and the main README:
+  rename them together. Resize photos to ~1400 px (strips phone metadata) before committing.
 
 ## Checks to run after changes
 

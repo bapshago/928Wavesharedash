@@ -58,8 +58,8 @@ New on the round display:
 | Part | Notes |
 |---|---|
 | Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C | ESP32-P4, 32 MB PSRAM, 32 MB flash, 800×800 MIPI-DSI round IPS, capacitive touch |
-| 3.3 V CAN transceiver, e.g. TI SN65HVD230 | The ESP32-P4 has an on-chip CAN (TWAI) controller but no transceiver |
-| 12 V → 5 V supply | Powers the board through its USB-C port |
+| 3.3 V CAN transceiver: SN65HVD230 breakout | The ESP32-P4 has an on-chip CAN (TWAI) controller but no transceiver. The breakout plugs onto the board's 40-pin header |
+| 12 V → 5 V buck converter (LM2596 module) | One per unit, with a USB-C lead soldered to its output to power the board. Set it to 5 V and check the polarity before plugging into the board |
 
 Wiring (defaults; change them in `idf.py menuconfig` → *928 EV Dash*):
 
@@ -155,14 +155,14 @@ cmake -S host_test -B build-test && cmake --build build-test && ./build-test/tes
 
 ```
 main/
-  main.c            boot: settings + CAN, then display + UI
-  dash_model.c      ESP32 side: TWAI receive, NVS settings/odometer, test mode
-  core/             portable C, no ESP-IDF: state, Leaf/ZombieVerter decoder, calculations
-  ui/               LVGL: gauge widget, driver + service screens
-sim/                desktop renderer (LVGL on the PC → PNG)
-host_test/          unit tests for main/core
-docs/               screenshots, ZombieVerter CAN mapping guide
-hardware/mechanical/ cut files (DXF), bend diagrams, assembly notes, build photos
+  main.c                boot: settings + CAN, then display + UI
+  dash_model.c          ESP32 side: TWAI receive, NVS settings/odometer, test mode
+  core/                 portable C, no ESP-IDF: state, Leaf/ZombieVerter decoder, calculations
+  ui/                   LVGL: gauge widget, driver + service screens
+sim/                    desktop renderer (LVGL on the PC → PNG)
+host_test/              unit tests for main/core
+docs/                   screenshots, ZombieVerter CAN mapping guide
+hardware/mechanical/    cut files (DXF), bend diagrams, assembly notes, build photos
 ```
 
 ## Differences from the web dash

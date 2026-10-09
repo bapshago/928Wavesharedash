@@ -1,13 +1,13 @@
-# Mechanical parts (laser cut)
+# Mechanical build
 
-Cut files for the dash pod and electronics brackets. The DXF drawings are in
-millimetres.
+Parts, bending, the shroud and assembly for the dash pod. The DXF cut files are
+in millimetres.
 
 | File | Part | Qty (both units) | Material | How it's made |
 |---|---|---|---|---|
 | `SCS_MainInstrumentFaceplate_RV1_1.dxf` | Main instrument faceplate: two 90 mm gauge openings, mounting tab each end (416 × 120 mm flat) | 1 | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
 | `SCS_WaveshareMountingBracket_RV1_1.dxf` | Waveshare mounting bracket: joins a Waveshare screen to the back of the faceplate (33 × 10 mm flat, two 4.5 mm holes) | 8 | 16 gauge (1/16") cold rolled steel | SendCutSend, then bent (below) |
-| `SCS_BuckConverterForDash_Plate_V1_1.dxf` | Buck converter bracket, **6 round holes**: four 3 mm for the M2.5 standoffs, two 4.5 mm for M4 (attaches to the screen; flat, no bends) | 2 | 1/16" ABS | Laser cut |
+| `SCS_BuckConverterBracket_V1_1.dxf` | Buck converter bracket, **6 round holes**: four 3 mm for the M2.5 standoffs, two 4.5 mm for M4 (attaches to the screen; flat, no bends) | 2 | 1/16" ABS | Laser cut |
 | `SCS_CanBusWireBracket_V1_1.dxf` | CAN bus wire bracket, **2 round holes** (4.5 mm for M4) plus zip-tie slots; 24.8 × 88 mm (attaches to the screen; flat, no bends) | 2 | 1/16" ABS | Laser cut |
 | *(no file: hand formed)* | Shroud: strip formed around the faceplate to meet the pod face | 1 | 18 gauge cold rolled steel, 3" × 31" strip | Hand formed, welded to the faceplate (below) |
 
@@ -16,8 +16,7 @@ millimetres.
 Upload `SCS_MainInstrumentFaceplate_RV1_1.dxf` and
 `SCS_WaveshareMountingBracket_RV1_1.dxf` (quantity 8), confirm the units are
 **millimetres** when the part preview loads (the faceplate should show about
-416 × 120 mm),
-and choose **cold rolled steel, 16 gauge**. SendCutSend's 16 ga steel is nominally
+416 × 120 mm), and choose **cold rolled steel, 16 gauge**. SendCutSend's 16 ga steel is nominally
 0.060" (1.52 mm), close enough to 1/16" (0.0625") for these parts.
 
 ## Bending the main instrument faceplate
