@@ -138,10 +138,11 @@ Full details are in the main README under
 [Building and flashing](../README.md#building-and-flashing). The short version:
 
 1. Install ESP-IDF **5.5 or newer**.
-2. Check the chip revision on each board. The repo defaults are for **ESP32-P4
-   rev v1.x**. For a rev v3.x chip, use the `sdkconfig.defaults.rev3_x` build in
-   the README.
+2. Check the chip revision on each board. Newer Waveshare boards have **v3.x**
+   chips (the second unit is v3.2); older ones have **v1.x** (the first unit is
+   v1.3). If you're not sure, try flashing: the error names the chip's revision.
 3. Run `idf.py menuconfig` → **928 EV Dash** and set:
+   - **ESP32-P4 chip revision:** *v1.x* or *v3.x*, to match the board.
    - **Screen side:** *Left* on one unit, *Right* on the other.
    - **Test mode:** *off* for the car. *On* is useful for a bench check without CAN.
    - **CAN TX / RX GPIO:** 35 / 34, unless your transceiver is on other pins.
@@ -151,8 +152,8 @@ Full details are in the main README under
    in `main/core/dash_calc.h` to the car's real mileage. It seeds once, on the
    first boot.
 
-Because the side is a build setting, flash the left and right units one at a
-time and label them.
+Because the side and chip revision are build settings, flash the left and right
+units one at a time and label them with their side and chip revision.
 
 ---
 
@@ -268,7 +269,8 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 
 | Symptom | Cause and fix |
 |---|---|
-| Flashing fails: *"requires chip revision in range [v3.0 - v3.99] (this chip is revision v1.3)"* | The build doesn't match the chip revision. Delete `sdkconfig` and `build/`, then rebuild with the right defaults for your chip (see [Firmware](#5-firmware)) |
+| Flashing fails: *"requires chip revision in range [v1.0 - v1.99] (this chip is revision v3.2)"*, or the reverse | The build's chip revision doesn't match the board. Set menuconfig → 928 EV Dash → **ESP32-P4 chip revision** to the revision in the message, rebuild and flash. Don't use esptool's `--force` |
+| Build stops: *"928 EV Dash is set to a v3.x chip, but sdkconfig still selects ESP32-P4 revisions <3.0"* | The `sdkconfig` was made before the chip revision option existed. Delete `sdkconfig` and `build/`, choose v3.x again and rebuild |
 | Build errors on ESP-IDF 6.x after updating the repo | An old `sdkconfig` or `managed_components/` is left over. Delete `sdkconfig`, `build/` and `managed_components/`, then rebuild |
 | Screen works but no CAN frames (service page counters stay at 0) | Check the CTX/CRX pins match menuconfig (TX 35, RX 34 by default); on the first unit RX was wired to 34 when the setting said 36. Then check CAN-H / CAN-L aren't swapped, the bus is at 500 kbit/s, and listen-only is off on a bench |
 | Some gauges stay `--` while others work | Their source isn't sending on this bus. Drive direction, op mode and 12 V need the ZombieVerter 0x31A mapping; SOC and current come from the BMS; temperatures from the inverter |

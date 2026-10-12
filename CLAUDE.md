@@ -33,6 +33,10 @@ aligned with it unless a change is deliberate and noted in README "Differences".
 - UI calls from outside LVGL timers must hold `bsp_display_lock()`.
 - Prefix local helpers (`prefs_*` in dash_model.c): ESP-IDF 6.1 added `nvs_get_double()` etc., and
   unprefixed names like `nvs_*` collide with new IDF APIs.
+- ESP32-P4 v1.x and v3.x silicon need different builds. Kconfig choice `DASH_CHIP_REV_V1/V3`
+  drives IDF's `ESP32P4_SELECTS_REV_LESS_V3` via `select`; never set that IDF option in
+  sdkconfig.defaults (a saved user value can't be cleared by deselecting).
+  main/CMakeLists.txt fails the build if V3 is chosen but the IDF option is still on.
 - Kconfig `bool` options are undefined (not 0) when off — use `#if CONFIG_X`, not the macro as a value.
 - BSP pinned to `waveshare/esp32_p4_wifi6_touch_lcd_xc` 3.0.1 (same as Waveshare's examples);
   its display config uses `esp_lvgl_adapter` (`ESP_LV_ADAPTER_DEFAULT_CONFIG()`).

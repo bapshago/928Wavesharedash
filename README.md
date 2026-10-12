@@ -114,6 +114,7 @@ Options under `idf.py menuconfig` → **928 EV Dash**:
 
 | Option | Default | |
 |---|---|---|
+| ESP32-P4 chip revision | v1.x | **v1.x** or **v3.x**, to match the board's chip (see below) |
 | Screen side | Left | **Left** or **Right**, see above. Set this differently on the two units |
 | CAN TX / RX GPIO | 35 / 34 | Transceiver pins |
 | CAN bitrate | 500000 | |
@@ -121,12 +122,16 @@ Options under `idf.py menuconfig` → **928 EV Dash**:
 | Test mode | off | No CAN needed: every gauge sweeps its full range up and back down over 20 s, SOC 100 → 0 %, and on/off states step through in turn. Test-mode distance is not added to the odometer |
 | Backlight brightness | 100 % | |
 
-The defaults target **ESP32-P4 silicon rev v1.x** (the chip on our board is
-v1.3; the boot log and esptool print the revision). Newer boards ship with
-v3.x silicon, and the two builds are not interchangeable: flashing reports
-"requires chip revision in range ...". For a v3.x chip, build with
-`idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.rev3_x" build`
-after deleting `sdkconfig` and `build/`.
+**ESP32-P4 chip revision:** Waveshare boards ship with v1.x silicon (older
+boards; the first unit is v1.3) or v3.x (newer boards, e.g. v3.2). Firmware built
+for one won't flash on the other: esptool stops with "requires chip revision in
+range ...". The flash error, the boot log and `esptool chip-id` all print the
+revision. Set **ESP32-P4 chip revision** in the menu to match the board you're
+flashing (default v1.x). The two units in one car can be different revisions.
+
+If your `sdkconfig` predates this option, delete `sdkconfig` and `build/` once
+before switching to v3.x. Otherwise the build stops with a message explaining
+the leftover setting.
 
 Drivetrain constants (gear ratio 7.94, tyre circumference 1.975 m, 22 kWh pack,
 3.9 mi/kWh, initial odometer) are at the top of `main/core/dash_calc.h`.

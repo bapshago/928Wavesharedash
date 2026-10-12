@@ -13,6 +13,23 @@ menu "928 EV Dash"
             bool "Right: current, voltage, 12V, temperatures, op mode, charger"
     endchoice
 
+    choice DASH_CHIP_REV
+        prompt "ESP32-P4 chip revision"
+        default DASH_CHIP_REV_V1
+        help
+            Waveshare boards ship with either ESP32-P4 silicon v1.x (older boards)
+            or v3.x (newer boards), and firmware built for one won't flash on the
+            other ("requires chip revision in range ..."). The boot log and
+            esptool print the revision; pick the one for the board you're
+            flashing. This sets ESP-IDF's own chip revision options to match.
+
+        config DASH_CHIP_REV_V1
+            bool "v1.x (older boards, e.g. v1.3)"
+            select ESP32P4_SELECTS_REV_LESS_V3
+        config DASH_CHIP_REV_V3
+            bool "v3.x (newer boards, e.g. v3.2)"
+    endchoice
+
     config DASH_CAN_TX_GPIO
         int "CAN transceiver TX GPIO (to transceiver D/TXD)"
         range 0 54
