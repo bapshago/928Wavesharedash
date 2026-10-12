@@ -128,6 +128,11 @@ Do this for each of the two units.
 3. **Check the polarity at the USB-C end** with the multimeter (VBUS +5 V, GND)
    **before** plugging it into the Waveshare board.
 
+On the first car, a **USB-C plug with a screw-terminal block** was used instead of a
+soldered cable: the buck converter's OUT+ / OUT− wires go into the terminal
+block and the plug goes into the screen. Either way works; check the polarity
+the same way.
+
 > **Open item:** photo of the USB-C lead soldered to the buck converter.
 
 ---
@@ -181,7 +186,8 @@ Steps for each screen:
 6. Route the wires and secure them with small zip ties through the bracket notches.
 
 The [back assembly photo](../hardware/mechanical/README.md#assembly-hardware) shows
-one finished unit.
+one finished unit. The [bench photos](../hardware/mechanical/README.md#build-photos)
+(12 to 14) show both units assembled and wired, with the CAN transceivers fitted.
 
 ### Fitting the faceplate in the pod
 
@@ -212,6 +218,9 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 - Fuse it with a **4 A fuse** before the buck converters.
 - **One** 4 A fuse covers both buck converters: a single fused feed splits to the
   two converter inputs after the fuse.
+- **As built on the first car:** a **3 A** fuse was used because 4 A wasn't on
+  hand, with one inline fuse per buck converter (see the bench photos). Each
+  screen is rated 5 V at 500 mA, so 3 A has plenty of margin.
 - The first car's power run is about 5 ft to the CE panel. Size yours to your car.
 
 > **Open item:** the ground is taken at the CE panel; the exact ground point
@@ -244,6 +253,8 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 ### On the bench
 
 1. Build one unit with **test mode on** and power it from its buck converter.
+   A barrel jack on the 12 V input lead is handy for a bench supply; replace it
+   with a crimped connection for the car.
    Every gauge should sweep its full range and back.
 2. Swipe left, or tap the arrow on the right edge, to reach the service page.
    Check that touch works.

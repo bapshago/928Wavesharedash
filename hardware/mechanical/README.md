@@ -135,3 +135,18 @@ stitch welded to the faceplate.
 
 ![Parts being painted](photos/09_parts_painting.jpg)
 ![Finished painted pod](photos/10_pod_painted.jpg)
+
+**Both units assembled on the bench.** Two ESP32-P4 3.4" round screens on the
+faceplate, each with its LM2596 buck converter on its ABS bracket. Each buck
+converter output feeds its screen through a USB-C plug with a screw-terminal
+block (the green blocks). Each side has its own inline blade fuse (3 A, purple).
+The barrel jack on the input lead is **for bench testing only**; the in-car
+feed is crimped (see [Wiring into the car](../../docs/BUILD.md#7-wiring-into-the-car)).
+
+![Both units assembled on the bench, top view](photos/12_bench_unit_top.jpg)
+![Both units assembled on the bench, angled view](photos/13_bench_unit_angle.jpg)
+
+**Back of the pod with the CAN transceivers fitted**: an SN65HVD230 breakout on
+each screen's 40-pin header, with the CAN-H / CAN-L leads routed to the middle.
+
+![Back of the pod with both CAN transceivers fitted](photos/14_back_can_transceivers.jpg)
