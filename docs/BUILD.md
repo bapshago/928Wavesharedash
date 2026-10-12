@@ -270,6 +270,7 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 | Symptom | Cause and fix |
 |---|---|
 | Flashing fails: *"requires chip revision in range [v1.0 - v1.99] (this chip is revision v3.2)"*, or the reverse | The build's chip revision doesn't match the board. Set menuconfig → 928 EV Dash → **ESP32-P4 chip revision** to the revision in the message, rebuild and flash. Don't use esptool's `--force` |
+| Still the same chip revision error after changing the setting | Old files were flashed. Delete `sdkconfig` and the whole `build` folder, set the chip revision again in menuconfig and **Save**. Check `sdkconfig` has `CONFIG_DASH_CHIP_REV_V3=y` (or `_V1`), then run **Build** on its own and check it finishes with no errors before you **Flash** |
 | Build stops: *"928 EV Dash is set to a v3.x chip, but sdkconfig still selects ESP32-P4 revisions <3.0"* | The `sdkconfig` was made before the chip revision option existed. Delete `sdkconfig` and `build/`, choose v3.x again and rebuild |
 | Build errors on ESP-IDF 6.x after updating the repo | An old `sdkconfig` or `managed_components/` is left over. Delete `sdkconfig`, `build/` and `managed_components/`, then rebuild |
 | Screen works but no CAN frames (service page counters stay at 0) | Check the CTX/CRX pins match menuconfig (TX 35, RX 34 by default); on the first unit RX was wired to 34 when the setting said 36. Then check CAN-H / CAN-L aren't swapped, the bus is at 500 kbit/s, and listen-only is off on a bench |
