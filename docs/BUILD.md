@@ -27,11 +27,11 @@ Quantities are for the pair (two screens).
 | Part | Qty | Notes |
 |---|---|---|
 | Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C | 2 | 3.4" round 800×800 touch display. Check the chip revision (see [Firmware](#5-firmware)) |
-| SN65HVD230 CAN transceiver breakout | 2 | Pins: 3V3, GND, CTX, CRX, CANH, CANL. Plugs onto the Waveshare 40-pin header |
+| SN65HVD230 CAN transceiver breakout | 2 | Sold as **WCMCU-230** (chip marked VP230). Pins: 3V3, GND, CTX, CRX, CANH, CANL. Plugs onto the Waveshare 40-pin header |
 | LM2596 12 V → 5 V buck converter module (with voltage display) | 2 | One per screen. Rated 2.1 A each |
 | USB-C cable | 2 | Cut and soldered to the buck converter output |
 | Inline fuse holder and **4 A** fuse | 1 | On the 12 V feed, before the buck converters |
-| Wire for 12 V power and ground | about 5 ft | Run from the CE panel. Length depends on your car |
+| Wire for 12 V power and ground | as needed | From the original right-hand instrument cluster connector (see [12 V power](#12-v-power)). Length depends on your car |
 | Wire for CAN-H / CAN-L | about 6 ft | Twisted pair recommended. Length depends on your car |
 
 ### Cut and formed parts
@@ -115,9 +115,16 @@ Do this for each of the two units.
 2. **Termination:** the breakout has a 120 Ω terminating resistor (R2). The EV CAN
    bus is already terminated at both ends, so **remove R2** unless this dash is
    physically at one end of the bus.
-3. Solder the CAN-H and CAN-L leads to the breakout's CANH and CANL pads.
+3. Fit the CAN-H and CAN-L leads to the breakout's CANH and CANL pads. On the
+   first car a small 2-pin plug was soldered to CANH / CANL so the CAN lead
+   unplugs.
 
-> **Open item:** photo of the transceiver with header pins fitted and plugged in.
+As fitted on the first car (photos 17 to 20 in the
+[mechanical README](../hardware/mechanical/README.md#build-photos)):
+
+- Header pins on 3V3, GND, CTX and CRX, plugged straight onto the Waveshare
+  header. The 3V3 pin is soldered offset so it reaches the header's 3.3 V pin.
+- A 2-pin plug on CANH / CANL for the CAN lead.
 
 ### Buck converter
 
@@ -131,9 +138,9 @@ Do this for each of the two units.
 On the first car, a **USB-C plug with a screw-terminal block** was used instead of a
 soldered cable: the buck converter's OUT+ / OUT− wires go into the terminal
 block and the plug goes into the screen. Either way works; check the polarity
-the same way.
-
-> **Open item:** photo of the USB-C lead soldered to the buck converter.
+the same way. Photo 21 in the
+[mechanical README](../hardware/mechanical/README.md#build-photos) shows the
+screw-terminal plugs (green) in both screens.
 
 ---
 
@@ -201,11 +208,11 @@ Mount the faceplate in the 928 instrument pod with either:
 ## 7. Wiring into the car
 
 ```
-Terminal 15 (CE panel) ── 4 A fuse ──┬── Buck converter (left)  IN+ ── USB-C ── Left screen
-                                     └── Buck converter (right) IN+ ── USB-C ── Right screen
+Switched 12 V (instrument connector) ── fuse ──┬── Buck converter (left)  IN+ ── USB-C ── Left screen
+                                               └── Buck converter (right) IN+ ── USB-C ── Right screen
 
-Ground (CE panel) ───────────────────┬── Buck converter (left)  IN−
-                                     └── Buck converter (right) IN−
+Ground (instrument connector) ─────────────────┬── Buck converter (left)  IN−
+                                               └── Buck converter (right) IN−
 
 EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
                              └── Right screen transceiver
@@ -213,18 +220,26 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 
 ### 12 V power
 
-- Take 12 V from **terminal 15 on the Porsche CE (central electrical) panel**.
-  That's the switched ignition feed, so the dash is on only with the ignition.
+- **As built on the first car:** power and ground come from the **original
+  right-hand instrument cluster connector**, which the old cluster no longer
+  uses: **pins 1 and 7**. This saves running new wire to the CE panel. See
+  photos 15 and 16 in the
+  [mechanical README](../hardware/mechanical/README.md#build-photos).
+- The supply must be **switched with the ignition** (terminal 15), so the dash is
+  on only with the ignition. **Alternative:** take terminal 15 directly from the
+  Porsche CE (central electrical) panel.
 - Fuse it with a **4 A fuse** before the buck converters.
 - **One** 4 A fuse covers both buck converters: a single fused feed splits to the
   two converter inputs after the fuse.
 - **As built on the first car:** a **3 A** fuse was used because 4 A wasn't on
   hand, with one inline fuse per buck converter (see the bench photos). Each
   screen is rated 5 V at 500 mA, so 3 A has plenty of margin.
-- The first car's power run is about 5 ft to the CE panel. Size yours to your car.
+- Before connecting the buck converters, check with a multimeter that the 12 V
+  pin is live only with the ignition on, and that the ground pin reads 0 Ω to
+  chassis.
 
-> **Open item:** the ground is taken at the CE panel; the exact ground point
-> is to be confirmed.
+> **Open item:** which of pins 1 and 7 is switched 12 V and which is ground. In
+> Porsche's wiring colour code brown is ground.
 
 ### CAN bus
 
@@ -287,5 +302,5 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 | Screen works but no CAN frames (service page counters stay at 0) | Check the CTX/CRX pins match menuconfig (TX 35, RX 34 by default); on the first unit RX was wired to 34 when the setting said 36. Then check CAN-H / CAN-L aren't swapped, the bus is at 500 kbit/s, and listen-only is off on a bench |
 | Some gauges stay `--` while others work | Their source isn't sending on this bus. Drive direction, op mode and 12 V need the ZombieVerter 0x31A mapping; SOC and current come from the BMS; temperatures from the inverter |
 | Current reads about double | Some Leaf decodes use 0.5 A/bit. Compare with a clamp meter; see "Differences" in the main README |
-| Screen doesn't power up | Check the fuse, terminal 15 is live with the ignition on, the buck converter output is 5 V and the USB-C polarity |
+| Screen doesn't power up | Check the fuse, the switched 12 V pin is live with the ignition on, the buck converter output is 5 V and the USB-C polarity |
 | Holding the board's BOOT button upsets the CAN bus | GPIO35 (CAN TX) is also the BOOT pin. Don't press BOOT with the car on |

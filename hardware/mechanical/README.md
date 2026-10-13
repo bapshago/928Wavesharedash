@@ -150,3 +150,27 @@ feed is crimped (see [Wiring into the car](../../docs/BUILD.md#7-wiring-into-the
 each screen's 40-pin header, with the CAN-H / CAN-L leads routed to the middle.
 
 ![Back of the pod with both CAN transceivers fitted](photos/14_back_can_transceivers.jpg)
+
+**Power from the original instrument cluster connector.** The right-hand cluster
+connector is unused once the original cluster is out. Pins 1 and 7 supply the
+dash's switched 12 V and ground (see
+[12 V power](../../docs/BUILD.md#12-v-power)).
+
+![Right-hand instrument cluster connector](photos/15_instrument_connector_right.jpg)
+![Instrument connector, pin numbers moulded into the shell](photos/16_instrument_connector_pins.jpg)
+
+**CAN transceiver (SN65HVD230 breakout, sold as WCMCU-230).** Header pins on
+3V3, GND, CTX and CRX plug straight onto the Waveshare 40-pin header. The 3V3 pin
+is soldered offset to reach the header's 3.3 V pin. A 2-pin plug on CANH / CANL
+takes the CAN lead.
+
+![Transceiver with header pins fitted](photos/17_transceiver_header_pins.jpg)
+![Transceiver with the CAN plug](photos/18_transceiver_can_plug.jpg)
+![Back of the transceiver](photos/19_transceiver_back.jpg)
+![Transceiver plugged onto the Waveshare header](photos/20_transceiver_on_header.jpg)
+
+**Both units wired.** Each screen has its transceiver on the header with the CAN
+lead plugged in, and a USB-C screw-terminal plug (green) for 5 V from its buck
+converter.
+
+![Back of both units, wired](photos/21_back_both_units_wired.jpg)
