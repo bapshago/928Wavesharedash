@@ -109,7 +109,7 @@ Do this for each of the two units.
 ### CAN transceiver
 
 1. Solder header pins to the SN65HVD230 breakout so it plugs onto the Waveshare
-   40-pin header. CTX must go to GPIO35 and CRX to GPIO34 (see the
+   40-pin header. CTX must go to GPIO35 and CRX to GPIO36 (see the
    [wiring table](../README.md#hardware)). If your header lands on other pins,
    change them in menuconfig to match ([Firmware](#5-firmware)).
 2. **Termination:** the breakout has a 120 Ω terminating resistor (R2). The EV CAN
@@ -157,7 +157,7 @@ Full details are in the main README under
    - **ESP32-P4 chip revision:** *v1.x* or *v3.x*, to match the board.
    - **Screen side:** *Left* on one unit, *Right* on the other.
    - **Test mode:** *off* for the car. *On* is useful for a bench check without CAN.
-   - **CAN TX / RX GPIO:** 35 / 34, unless your transceiver is on other pins.
+   - **CAN TX / RX GPIO:** 35 / 36, unless your transceiver is on other pins.
 4. Build and flash each unit:
    `idf.py build` then `idf.py -p <port> flash monitor`.
 5. **Odometer:** before the first boot in the car, set `DASH_ODO_INITIAL_MILES`
@@ -299,7 +299,7 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 | Still the same chip revision error after changing the setting | Old files were flashed. Delete `sdkconfig` and the whole `build` folder, set the chip revision again in menuconfig and **Save**. Check `sdkconfig` has `CONFIG_DASH_CHIP_REV_V3=y` (or `_V1`), then run **Build** on its own and check it finishes with no errors before you **Flash** |
 | Build stops: *"928 EV Dash is set to a v3.x chip, but sdkconfig still selects ESP32-P4 revisions <3.0"* | The `sdkconfig` was made before the chip revision option existed. Delete `sdkconfig` and `build/`, choose v3.x again and rebuild |
 | Build errors on ESP-IDF 6.x after updating the repo | An old `sdkconfig` or `managed_components/` is left over. Delete `sdkconfig`, `build/` and `managed_components/`, then rebuild |
-| Screen works but no CAN frames (service page counters stay at 0) | Check the CTX/CRX pins match menuconfig (TX 35, RX 34 by default); on the first unit RX was wired to 34 when the setting said 36. Then check CAN-H / CAN-L aren't swapped, the bus is at 500 kbit/s, and listen-only is off on a bench |
+| Screen works but no CAN frames (service page counters stay at 0) | Check the CTX/CRX pins match menuconfig (TX 35, RX 36 by default). On the first car the RX setting was wrong twice before it was confirmed as GPIO36 on both boards. Then check CAN-H / CAN-L aren't swapped, the bus is at 500 kbit/s, and listen-only is off on a bench |
 | Some gauges stay `--` while others work | Their source isn't sending on this bus. Drive direction, op mode and 12 V need the ZombieVerter 0x31A mapping; SOC and current come from the BMS; temperatures from the inverter |
 | Current reads about double | Some Leaf decodes use 0.5 A/bit. Compare with a clamp meter; see "Differences" in the main README |
 | Screen doesn't power up | Check the fuse, the switched 12 V pin is live with the ignition on, the buck converter output is 5 V and the USB-C polarity |
