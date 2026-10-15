@@ -40,6 +40,9 @@ aligned with it unless a change is deliberate and noted in README "Differences".
 - Odometer: misrepresenting mileage is illegal (U.S. 49 U.S.C. 32703/32704; see README "Odometer and
   the law"). `dash_odo_integrate()` must only ever add distance (reverse included), and there must be
   no UI or setting that lowers or edits the stored reading. Host tests check it never decreases.
+- Tyre size and gear ratio come from Kconfig ("Speed and odometer calibration"). core/ stays portable:
+  dash_calc.h only includes sdkconfig.h when DASH_HAVE_SDKCONFIG is defined (main/CMakeLists.txt);
+  host tests and the sim fall back to the same defaults (1975 mm, 7940). Keep them in step.
 - Kconfig `bool` options are undefined (not 0) when off — use `#if CONFIG_X`, not the macro as a value.
 - BSP pinned to `waveshare/esp32_p4_wifi6_touch_lcd_xc` 3.0.1 (same as Waveshare's examples);
   its display config uses `esp_lvgl_adapter` (`ESP_LV_ADAPTER_DEFAULT_CONFIG()`).

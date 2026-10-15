@@ -120,6 +120,7 @@ Options under `idf.py menuconfig` → **928 EV Dash**:
 | CAN bitrate | 500000 | |
 | Listen-only | off | On = the dash never ACKs or transmits. Leave off on a bench with only one transmitter |
 | Test mode | off | No CAN needed: every gauge sweeps its full range up and back down over 20 s, SOC 100 → 0 %, and on/off states step through in turn. Test-mode distance is not added to the odometer |
+| Speed and odometer calibration | 1975 mm, 7.94 | Submenu. Driven-wheel **tyre size**, as a measured rolling circumference (default 1975 mm) or a sidewall size such as 245/45R16, and the **overall gear ratio** (×1000, default 7940 = 7.94:1). Speed and the odometer depend on both: set them for your car, on both units (see [Odometer and the law](#odometer-and-the-law)) |
 | Backlight brightness | 100 % | |
 
 **ESP32-P4 chip revision:** Waveshare boards ship with v1.x silicon (older
@@ -133,8 +134,9 @@ If your `sdkconfig` predates this option, delete `sdkconfig` and `build/` once
 before switching to v3.x. Otherwise the build stops with a message explaining
 the leftover setting.
 
-Drivetrain constants (gear ratio 7.94, tyre circumference 1.975 m, 22 kWh pack,
-3.9 mi/kWh, initial odometer) are at the top of `main/core/dash_calc.h`.
+Tyre size and gear ratio are set in menuconfig (above). The other drivetrain
+constants (22 kWh pack, 3.9 mi/kWh, initial odometer) are at the top of
+`main/core/dash_calc.h`.
 
 ## Previewing the screen without hardware
 
@@ -229,10 +231,13 @@ What this means when you build and use this dash:
 2. **Don't change the code to lower, edit or reset the reading.** The firmware
    only counts up: reverse adds distance, test mode adds nothing, and there's no
    setting to change the stored mileage. Comments in the code mark this.
-3. **Check the odometer's accuracy.** It's calculated from motor speed using
-   `DASH_GEAR_RATIO` and `DASH_TIRE_CIRCUMFERENCE_M`. Compare it over a known
-   distance or against GPS, and update those constants if you change the tyre size
-   or the gearing.
+3. **Set the tyre size and gear ratio, and check the odometer's accuracy.**
+   Distance is calculated from motor speed, the gear ratio and the driven tyres'
+   rolling circumference. Set both in menuconfig → 928 EV Dash → **Speed and
+   odometer calibration**, on both units. A measured circumference is the most
+   accurate; a size from the sidewall is close but reads slightly high. Compare
+   against a known distance or GPS, and update the settings whenever you change
+   tyre size or gearing.
 4. **Erasing the board's flash re-seeds the odometer** to `DASH_ODO_INITIAL_MILES`.
    Only do it to carry the car's true reading over, for example onto a replacement
    unit, and set the constant to the current reading first.

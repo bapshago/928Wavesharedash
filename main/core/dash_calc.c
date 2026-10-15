@@ -3,6 +3,12 @@
 
 #include <math.h>
 
+float dash_tire_circumference_m(int width_mm, int aspect_pct, int rim_in)
+{
+    const float diameter_mm = rim_in * 25.4f + 2.0f * width_mm * aspect_pct / 100.0f;
+    return (float)M_PI * diameter_mm / 1000.0f;
+}
+
 float dash_rpm_to_kph(float rpm)
 {
     if (DASH_GEAR_RATIO <= 0.01f || DASH_TIRE_CIRCUMFERENCE_M <= 0.01f) {

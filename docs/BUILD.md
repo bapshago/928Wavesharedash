@@ -158,6 +158,13 @@ Full details are in the main README under
    - **Screen side:** *Left* on one unit, *Right* on the other.
    - **Test mode:** *off* for the car. *On* is useful for a bench check without CAN.
    - **CAN TX / RX GPIO:** 35 / 36, unless your transceiver is on other pins.
+   - **Speed and odometer calibration:** the driven tyres' size and the overall
+     gear ratio. Measure the rolling circumference if you can: mark the tyre,
+     roll the car one full turn on level ground and measure the distance.
+     Otherwise enter the size from the sidewall (e.g. 245/45R16). The gear ratio
+     defaults to 7.94, the Leaf reduction gear. These set the speed and the
+     odometer, so a wrong value misreports mileage. Set them the same on both
+     units.
 4. Build and flash each unit:
    `idf.py build` then `idf.py -p <port> flash monitor`.
 5. **Odometer:** before the first boot in the car, set `DASH_ODO_INITIAL_MILES`
@@ -291,7 +298,9 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
 5. Check the odometer shows the car's true mileage, then check it counts
    correctly over a known distance or against GPS (see
    [Odometer and the law](../README.md#odometer-and-the-law)).
-6. Drive: check speed against GPS and that R / N / F follows the selector.
+6. Drive: check speed against GPS and that R / N / F follows the selector. If
+   speed reads consistently high or low, correct the tyre circumference or gear
+   ratio in menuconfig and reflash both units.
 
 ---
 

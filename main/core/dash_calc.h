@@ -8,13 +8,33 @@
 
 #include "dash_state.h"
 
+// On the ESP32 the speed calibration comes from menuconfig (main/Kconfig.projbuild,
+// "Speed and odometer calibration"). Host tests and the simulator have no
+// sdkconfig, so they get the defaults below, which match the Kconfig defaults.
+#ifdef DASH_HAVE_SDKCONFIG
+#include "sdkconfig.h"
+#endif
+#if !defined(CONFIG_DASH_TIRE_BY_SIZE) && !defined(CONFIG_DASH_TIRE_CIRCUMFERENCE_MM)
+#define CONFIG_DASH_TIRE_CIRCUMFERENCE_MM 1975
+#endif
+#ifndef CONFIG_DASH_GEAR_RATIO_X1000
+#define CONFIG_DASH_GEAR_RATIO_X1000 7940
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Drivetrain / pack constants carried over from leaf_dash_v9.ino and driverpage.h.
-#define DASH_GEAR_RATIO           7.94f
-#define DASH_TIRE_CIRCUMFERENCE_M 1.975f
+// Gear ratio and tyre size set speed and the odometer: getting them wrong
+// misreports mileage (see the legal note on DASH_ODO_INITIAL_MILES below).
+#define DASH_GEAR_RATIO           (CONFIG_DASH_GEAR_RATIO_X1000 / 1000.0f)
+#if defined(CONFIG_DASH_TIRE_BY_SIZE)
+#define DASH_TIRE_CIRCUMFERENCE_M \
+    dash_tire_circumference_m(CONFIG_DASH_TIRE_WIDTH_MM, CONFIG_DASH_TIRE_ASPECT_PCT, CONFIG_DASH_TIRE_RIM_IN)
+#else
+#define DASH_TIRE_CIRCUMFERENCE_M (CONFIG_DASH_TIRE_CIRCUMFERENCE_MM / 1000.0f)
+#endif
 #define DASH_PACK_KWH             22.0f
 #define DASH_MI_PER_KWH           3.9f
 #define DASH_LOW_SOC_PCT          10.0f   // below this: flashing critical warning
@@ -28,6 +48,11 @@ extern "C" {
 #define DASH_ODO_INITIAL_MILES    150000.0
 #define DASH_METERS_PER_MILE      1609.344
 #define DASH_KM_PER_MILE          1.60934f
+
+// Circumference in metres of a tyre given by its sidewall size, e.g. 245/45R16
+// -> (245, 45, 16). Unladen: the real rolling circumference is usually a little
+// smaller, so measure it when accuracy matters.
+float dash_tire_circumference_m(int width_mm, int aspect_pct, int rim_in);
 
 // User settings, persisted to NVS on the device.
 typedef struct {

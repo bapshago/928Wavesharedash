@@ -72,6 +72,65 @@ menu "928 EV Dash"
             screen can be checked without a CAN bus connected. The odometer
             does not count test-mode distance.
 
+    menu "Speed and odometer calibration"
+        comment "Speed and the odometer are calculated from these. Wrong values misreport mileage, which is illegal."
+
+        choice DASH_TIRE_INPUT
+            prompt "Tyre size given as"
+            default DASH_TIRE_BY_CIRCUMFERENCE
+            help
+                How the dash learns the driven wheels' tyre size. Speed and the
+                odometer are calculated from motor RPM, the gear ratio and this
+                size, so a wrong value misreports both. Misrepresenting a car's
+                mileage is illegal (in the U.S., 49 U.S.C. 32703); see "Odometer
+                and the law" in README.md. A measured rolling circumference is the
+                most accurate.
+
+            config DASH_TIRE_BY_CIRCUMFERENCE
+                bool "Rolling circumference (measured)"
+            config DASH_TIRE_BY_SIZE
+                bool "Tyre size from the sidewall (e.g. 245/45R16)"
+        endchoice
+
+        config DASH_TIRE_CIRCUMFERENCE_MM
+            int "Rolling circumference (mm)"
+            depends on DASH_TIRE_BY_CIRCUMFERENCE
+            range 1000 3000
+            default 1975
+            help
+                Distance the car travels for one turn of a driven wheel. Measure it
+                by marking the tyre and rolling the car one full turn, with the car
+                on its wheels at normal pressure. 1975 mm is the value carried over
+                from the web dash.
+
+        config DASH_TIRE_WIDTH_MM
+            int "Tyre width (mm), e.g. 245 in 245/45R16"
+            depends on DASH_TIRE_BY_SIZE
+            range 125 355
+            default 245
+
+        config DASH_TIRE_ASPECT_PCT
+            int "Profile / aspect ratio (%), e.g. 45 in 245/45R16"
+            depends on DASH_TIRE_BY_SIZE
+            range 20 90
+            default 45
+
+        config DASH_TIRE_RIM_IN
+            int "Rim diameter (inches), e.g. 16 in 245/45R16"
+            depends on DASH_TIRE_BY_SIZE
+            range 12 24
+            default 16
+
+        config DASH_GEAR_RATIO_X1000
+            int "Overall gear ratio x 1000 (motor turns per wheel turn)"
+            range 1000 20000
+            default 7940
+            help
+                Motor revolutions per wheel revolution, times 1000. 7940 is the
+                Nissan Leaf reduction gear (7.94:1). If the motor drives through
+                another gearbox or differential, enter the overall ratio.
+    endmenu
+
     config DASH_BRIGHTNESS
         int "Backlight brightness (%)"
         range 5 100

@@ -290,6 +290,8 @@ esp_err_t dash_model_start(void)
 
     xTaskCreate(housekeeping_task, "dash_house", 4096, NULL, 5, NULL);
 
+    ESP_LOGI(TAG, "speed calibration: tyre circumference %.0f mm, gear ratio %.3f",
+             DASH_TIRE_CIRCUMFERENCE_M * 1000.0f, DASH_GEAR_RATIO);
     const float mph_per_krpm = dash_kph_to_mph(dash_rpm_to_kph(1000));
     ESP_LOGI(TAG, "speed scale: %.3f mph per 1k RPM | ~%.1f mph @ 10k RPM", mph_per_krpm, mph_per_krpm * 10);
     return ESP_OK;

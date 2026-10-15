@@ -144,6 +144,12 @@ static void test_calc(void)
     dash_state_t s;
     dash_state_init(&s);
 
+    // Tyre size -> circumference: 245/45R16 = (406.4 + 2 * 110.25) mm * pi
+    CHECK_NEAR(dash_tire_circumference_m(245, 45, 16), 1.9695, 0.0005);
+    CHECK_NEAR(dash_tire_circumference_m(225, 50, 16), 1.9837, 0.0005);
+    CHECK_NEAR(DASH_TIRE_CIRCUMFERENCE_M, 1.975, 1e-6);  // default = the web dash's value
+    CHECK_NEAR(DASH_GEAR_RATIO, 7.94, 1e-6);
+
     // 1000 rpm / 7.94 * 1.975 m * 60 = 14.924 kph
     CHECK_NEAR(dash_rpm_to_kph(1000), 14.924, 0.01);
     s.motor_rpm = 5200;

@@ -10,6 +10,9 @@ idf_component_register(
     INCLUDE_DIRS "." "core" "ui"
     REQUIRES esp_driver_twai esp_timer nvs_flash)
 
+# core/ is portable C; this tells dash_calc.h it may read the menuconfig values.
+target_compile_definitions(${COMPONENT_LIB} PRIVATE DASH_HAVE_SDKCONFIG)
+
 # An sdkconfig written before the chip revision option existed can have ESP-IDF's
 # "revisions <3.0" setting saved as a fixed value, which a v3.x selection can't
 # clear. Stop here instead of building a bootloader the board will refuse.
