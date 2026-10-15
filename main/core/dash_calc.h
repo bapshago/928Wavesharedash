@@ -19,6 +19,12 @@ extern "C" {
 #define DASH_MI_PER_KWH           3.9f
 #define DASH_LOW_SOC_PCT          10.0f   // below this: flashing critical warning
 #define DASH_WARN_SOC_PCT         15.0f   // below this: red charge bar
+// Odometer reading written once, on a unit's first boot. Set it to the car's
+// TRUE mileage before that boot. Entering any other figure misrepresents the
+// vehicle's mileage, which is illegal (in the U.S., 49 U.S.C. 32703). If the
+// true mileage can't be carried over, 49 U.S.C. 32704 says to start from zero
+// and fix a written notice to the left door frame giving the previous mileage
+// and the date. See "Odometer and the law" in README.md.
 #define DASH_ODO_INITIAL_MILES    150000.0
 #define DASH_METERS_PER_MILE      1609.344
 #define DASH_KM_PER_MILE          1.60934f

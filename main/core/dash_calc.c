@@ -17,7 +17,10 @@ float dash_c_to_f(float c) { return c * 9.0f / 5.0f + 32.0f; }
 
 float dash_speed(const dash_state_t *s, const dash_settings_t *cfg)
 {
-    float kph = dash_rpm_to_kph(s->motor_rpm);
+    // The inverter reports reverse as negative RPM. Show the magnitude: the
+    // R / N / F indicator already says which way the car is going, and a
+    // negative number would leave the needle pinned at 0.
+    float kph = fabsf(dash_rpm_to_kph(s->motor_rpm));
     if (!isfinite(kph)) {
         return 0.0f;
     }
@@ -92,6 +95,13 @@ const char *dash_obc_text(uint8_t s)
     }
 }
 
+// LEGAL: misrepresenting a vehicle's mileage is illegal. In the U.S., federal
+// odometer law (49 U.S.C. 32701-32711) prohibits devices that make an odometer
+// register mileage different from the distance actually driven, and altering
+// or resetting an odometer to change the mileage it shows. Keep this function
+// counting every metre the car moves (forward and reverse; it must never go
+// down), and don't add any way to lower or edit the stored reading. See
+// "Odometer and the law" in README.md.
 double dash_odo_integrate(double odo_m, float motor_rpm, uint32_t dt_ms)
 {
     float kph = dash_rpm_to_kph(motor_rpm);

@@ -149,8 +149,8 @@ static void test_calc(void)
     s.motor_rpm = 5200;
     CHECK_NEAR(dash_speed(&s, &kph), 77.6, 0.1);
     CHECK_NEAR(dash_speed(&s, &mph), 48.2, 0.1);
-    s.motor_rpm = -5200;  // reverse shows as negative speed, same as the web dash
-    CHECK(dash_speed(&s, &kph) < 0);
+    s.motor_rpm = -5200;  // reverse: same speed as forward (R/N/F shows direction)
+    CHECK_NEAR(dash_speed(&s, &kph), 77.6, 0.1);
 
     CHECK_NEAR(dash_speed_max(&kph), 160, 0);
     CHECK_NEAR(dash_speed_max(&mph), 120, 0);
@@ -194,10 +194,15 @@ static void test_calc(void)
 
     // Odometer: 1 hour at 5200 rpm ≈ 77.6 km, reverse counts too
     double odo = 0;
+    bool never_decreased = true;
     for (int i = 0; i < 3600 * 4; i++) {
-        odo = dash_odo_integrate(odo, (i % 2) ? 5200 : -5200, 250);
+        double next = dash_odo_integrate(odo, (i % 2) ? 5200 : -5200, 250);
+        never_decreased &= next >= odo;
+        odo = next;
     }
     CHECK_NEAR(odo / 1000.0, 77.6, 0.1);
+    CHECK(never_decreased);  // the odometer must never go down (see the legal note in dash_calc.c)
+    CHECK_NEAR(dash_odo_integrate(1000.0, NAN, 250), 1000.0, 0);
     CHECK_NEAR(dash_odo_display(150000 * DASH_METERS_PER_MILE, &mph), 150000, 1e-6);
     CHECK_NEAR(dash_odo_display(1234567, &kph), 1234.567, 1e-6);
 }

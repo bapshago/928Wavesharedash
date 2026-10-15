@@ -161,8 +161,10 @@ Full details are in the main README under
 4. Build and flash each unit:
    `idf.py build` then `idf.py -p <port> flash monitor`.
 5. **Odometer:** before the first boot in the car, set `DASH_ODO_INITIAL_MILES`
-   in `main/core/dash_calc.h` to the car's real mileage. It seeds once, on the
-   first boot.
+   in `main/core/dash_calc.h` to the car's **true mileage**. It seeds once, on the
+   first boot. Misrepresenting mileage is illegal. If the true mileage can't be
+   carried over, U.S. law requires starting at zero with a notice on the left door
+   frame. Read [Odometer and the law](../README.md#odometer-and-the-law) first.
 
 Because the side and chip revision are build settings, flash the left and right
 units one at a time and label them with their side and chip revision.
@@ -286,7 +288,9 @@ EV CAN bus (CAN-H / CAN-L) ──┬── Left screen transceiver
    against the ZombieVerter.
 4. Set the units (mph / km/h and °F / °C) on the service page. **Do this on both
    screens**, because settings are stored per unit.
-5. Check the odometer against the car's mileage.
+5. Check the odometer shows the car's true mileage, then check it counts
+   correctly over a known distance or against GPS (see
+   [Odometer and the law](../README.md#odometer-and-the-law)).
 6. Drive: check speed against GPS and that R / N / F follows the selector.
 
 ---

@@ -37,6 +37,9 @@ aligned with it unless a change is deliberate and noted in README "Differences".
   drives IDF's `ESP32P4_SELECTS_REV_LESS_V3` via `select`; never set that IDF option in
   sdkconfig.defaults (a saved user value can't be cleared by deselecting).
   main/CMakeLists.txt fails the build if V3 is chosen but the IDF option is still on.
+- Odometer: misrepresenting mileage is illegal (U.S. 49 U.S.C. 32703/32704; see README "Odometer and
+  the law"). `dash_odo_integrate()` must only ever add distance (reverse included), and there must be
+  no UI or setting that lowers or edits the stored reading. Host tests check it never decreases.
 - Kconfig `bool` options are undefined (not 0) when off — use `#if CONFIG_X`, not the macro as a value.
 - BSP pinned to `waveshare/esp32_p4_wifi6_touch_lcd_xc` 3.0.1 (same as Waveshare's examples);
   its display config uses `esp_lvgl_adapter` (`ESP_LV_ADAPTER_DEFAULT_CONFIG()`).

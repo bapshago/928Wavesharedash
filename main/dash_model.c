@@ -125,7 +125,9 @@ static esp_err_t load_persisted(void)
 
     // One-time odometer seed: set the starting reading once on a device that has
     // never been seeded, then never overwrite it so real accumulated mileage is
-    // preserved. Erasing flash re-seeds it.
+    // preserved. Erasing flash re-seeds it, which resets the displayed mileage:
+    // only do that to carry the car's true reading over (see the legal note on
+    // DASH_ODO_INITIAL_MILES in core/dash_calc.h).
     if (!prefs_get_bool("odo_seeded", false)) {
         s_odo_m = DASH_ODO_INITIAL_MILES * DASH_METERS_PER_MILE;
         prefs_put_double("odo_m", s_odo_m);

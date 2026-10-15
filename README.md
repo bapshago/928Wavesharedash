@@ -180,6 +180,10 @@ hardware/mechanical/    cut files (DXF), bend diagrams, assembly notes, build ph
 - **No false low-battery alarm at key-on:** SOC, pack voltage and current show
   "--" until their first CAN frame arrives. The web dash treated a missing SOC
   as 0 %, which flashed the critical-battery banner whenever data was missing.
+- **Speed in reverse:** the inverter reports reverse as negative RPM. The web
+  dash showed it as a negative speed with the needle stuck at 0; this dash shows
+  the speed without the sign and R / N / F shows the direction. The odometer
+  counts reverse distance either way.
 - **Odometer display:** miles are computed as metres ÷ 1609.344 instead of
   km × 0.621371, which rounded 150,234 down to 150,233.
 - **Current scale unchanged:** 0x1DB current is used at 1 A/bit, exactly as the
@@ -188,3 +192,67 @@ hardware/mechanical/    cut files (DXF), bend diagrams, assembly notes, build ph
 - **Settings don't carry over:** the NVS namespace and keys match the web dash,
   but this is a different board, so the odometer seeds fresh at 150,000 miles.
   Change `DASH_ODO_INITIAL_MILES` before first boot to start from the car's real reading.
+
+## Odometer and the law
+
+Once the original instrument cluster is out, the left screen **is the car's
+odometer**. Misrepresenting a vehicle's mileage is illegal.
+
+In the U.S. this is covered by federal odometer law,
+[49 U.S.C. chapter 327](https://www.law.cornell.edu/uscode/text/49/subtitle-VI/part-C/chapter-327)
+(sections 32701 to 32711):
+
+- **[§ 32703](https://www.law.cornell.edu/uscode/text/49/32703)** prohibits
+  selling, using or installing a device that makes an odometer register mileage
+  different from the distance actually driven. It also prohibits disconnecting,
+  resetting or altering an odometer to change the mileage it registers.
+- **[§ 32704](https://www.law.cornell.edu/uscode/text/49/32704)** covers
+  servicing and replacing an odometer, which is what fitting this dash is. The
+  mileage must stay the same as before. If it can't, the odometer must be set to
+  zero and a written notice fixed to the **left door frame** giving the mileage
+  before the work and the date. Removing or altering that notice with intent to
+  defraud is prohibited.
+- **Penalties:** knowing and willful violations can bring fines and up to 3 years
+  in prison ([§ 32709](https://www.law.cornell.edu/uscode/text/49/32709)). A
+  person defrauded can sue for 3 times their actual damages or $10,000, whichever
+  is greater, plus attorney's fees
+  ([§ 32710](https://www.law.cornell.edu/uscode/text/49/32710)).
+- Mileage must also be disclosed when a vehicle changes hands
+  ([49 CFR part 580](https://www.ecfr.gov/current/title-49/subtitle-B/chapter-V/part-580)),
+  and states have their own odometer and title laws.
+
+What this means when you build and use this dash:
+
+1. **Before the left unit's first boot in the car**, set `DASH_ODO_INITIAL_MILES`
+   in `main/core/dash_calc.h` to the car's **true mileage**. If you can't establish
+   it, set it to `0` and fix the door-frame notice that § 32704 requires.
+2. **Don't change the code to lower, edit or reset the reading.** The firmware
+   only counts up: reverse adds distance, test mode adds nothing, and there's no
+   setting to change the stored mileage. Comments in the code mark this.
+3. **Check the odometer's accuracy.** It's calculated from motor speed using
+   `DASH_GEAR_RATIO` and `DASH_TIRE_CIRCUMFERENCE_M`. Compare it over a known
+   distance or against GPS, and update those constants if you change the tyre size
+   or the gearing.
+4. **Erasing the board's flash re-seeds the odometer** to `DASH_ODO_INITIAL_MILES`.
+   Only do it to carry the car's true reading over, for example onto a replacement
+   unit, and set the constant to the current reading first.
+
+This is a summary for builders, not legal advice. Laws vary by state and country;
+check the rules where the car is registered.
+
+## Disclaimer
+
+This software and the build documentation are provided **"as is", without warranty
+of any kind**, express or implied. They're a hobby project for one specific car.
+The authors aren't liable for any claim, damage or other liability arising from
+using, building, installing or modifying them.
+
+If you build or install this dash, you're responsible for:
+
+- complying with the laws that apply to your vehicle, including the odometer law
+  above and any equipment, inspection and registration rules;
+- making sure the odometer shows the vehicle's true mileage;
+- checking that every reading is accurate before relying on it. The dash shows
+  values decoded from the CAN bus and calculated from fixed constants, and it isn't
+  a safety system.
+
